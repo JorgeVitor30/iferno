@@ -1,0 +1,20 @@
+[
+  {
+    "asset_id": "3b5b151a-caff-41ff-9f3c-9c9457fc3dda",
+    "file": "assets/tilesets/floor_hallway.png",
+    "sha12": "ff1085a8a62d",
+    "label": "piso granilite (tileset 15-piece bruto)"
+  },
+  {
+    "asset_id": "8db4d070-dc3b-4f4b-88eb-ea523a27ef06",
+    "file": "assets/tilesets/wall_front.png",
+    "sha12": "a866bb6d1276",
+    "label": "parede corredor (frente, cortada 30x31)"
+  },
+  {
+    "asset_id": "107af357-78ee-4d48-beee-300b80614209",
+    "file": "assets/sprites/student.png",
+    "sha12": "ad7512a31427",
+    "label": "estudante base (personagem topdown)"
+  }
+]
