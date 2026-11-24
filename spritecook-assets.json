@@ -118,5 +118,47 @@
     "file": "assets/sprites/raw/roll_ne.png",
     "sha12": "c0bf79e78ae0",
     "label": "estudante dodge diagonal costas-direita (pixel-engine-v1.5)"
+  },
+  {
+    "asset_id": "f4efe422-8ed6-4d38-832f-1eca931f0dd5",
+    "file": "assets/props/raw/bus.png",
+    "sha12": "ab5998db943a",
+    "label": "ônibus verde"
+  },
+  {
+    "asset_id": "69b9d9f8-ce11-4ea0-a8a4-561061691560",
+    "file": "assets/props/raw/tree.png",
+    "sha12": "7ddecde2bc3c",
+    "label": "árvore"
+  },
+  {
+    "asset_id": "86324d3e-b6a5-4c84-a904-da3d0a87e4f0",
+    "file": "assets/props/raw/table.png",
+    "sha12": "daf1b37576b0",
+    "label": "mesa de piquenique"
+  },
+  {
+    "asset_id": "4ad09122-8cea-4c8b-93d4-3d02ff3f8dc0",
+    "file": "assets/props/raw/fence.png",
+    "sha12": "67e096b640b6",
+    "label": "cerca (pixel-engine, repete na horizontal)"
+  },
+  {
+    "asset_id": "74cca6cc-7af9-4bd3-9f61-eff80ecfa1f5",
+    "file": "assets/props/raw/bench.png",
+    "sha12": "ad252113df63",
+    "label": "banco"
+  },
+  {
+    "asset_id": "dc7bbe48-4735-4712-b4c7-8ac3f40e7778",
+    "file": "assets/props/raw/trash.png",
+    "sha12": "05f19a6fc634",
+    "label": "lixeira"
+  },
+  {
+    "asset_id": "03907c49-49f6-4b9e-8967-682f841811c6",
+    "file": "assets/props/raw/lamp.png",
+    "sha12": "91840aafea8a",
+    "label": "poste"
   }
 ]

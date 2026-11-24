@@ -41,6 +41,7 @@ const ANIM_LOOP := {"idle": true, "walk": true, "roll": false}
 var _view := "s"
 
 func _ready() -> void:
+	add_to_group("player")
 	hp = max_hp
 	health_changed.emit(hp, max_hp)
 	$Sprite2D.sprite_frames = _build_frames()
