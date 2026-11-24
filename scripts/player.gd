@@ -10,6 +10,10 @@ signal died
 @export var invuln_time := 0.8 # invencibilidade depois de tomar hit
 
 @export var speed := 90.0
+@export var accel := 900.0     # quão rápido chega na velocidade máxima
+@export var friction := 1100.0 # quão rápido para ao soltar as teclas
+@export var step_rate := 9.0   # passos por segundo do "pulinho" ao andar
+@export var step_height := 2.0 # altura do pulinho em pixels
 @export var roll_speed := 190.0
 @export var roll_time := 0.35
 @export var fire_rate := 0.15
@@ -19,6 +23,8 @@ var _roll_dir := Vector2.ZERO
 var _fire_cd := 0.0
 var _invuln_timer := 0.0
 var hp := 0
+var _walk_t := 0.0
+const SPRITE_Y := -17.0
 
 func _ready() -> void:
 	hp = max_hp
@@ -54,7 +60,8 @@ func _physics_process(delta: float) -> void:
 		_roll_timer -= delta
 		velocity = _roll_dir * roll_speed
 	else:
-		velocity = input * speed
+		var rate := accel if input != Vector2.ZERO else friction
+		velocity = velocity.move_toward(input * speed, rate * delta)
 		if Input.is_action_just_pressed("dodge") and input != Vector2.ZERO:
 			_roll_timer = roll_time
 			_roll_dir = input.normalized()
@@ -70,15 +77,24 @@ func _shoot() -> void:
 	b.direction = dir
 	get_parent().add_child(b)
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	var aim := (get_global_mouse_position() - global_position).normalized()
 	$Sprite2D.flip_h = aim.x < 0.0
-	# Parado: idle ofegante. Andando: segura o 1º quadro (até termos animação de andar).
-	if velocity.is_zero_approx():
-		$Sprite2D.play("idle")
-	else:
+	# Parado: idle ofegante. Andando: 1º quadro + pulinho a cada passo
+	# (placeholder até termos animação de andar desenhada).
+	var moving := velocity.length() > 10.0 and not is_rolling()
+	if moving:
 		$Sprite2D.pause()
 		$Sprite2D.frame = 0
+		_walk_t += delta * step_rate * (velocity.length() / speed)
+		var hop := absf(sin(_walk_t * PI)) * step_height
+		$Sprite2D.position.y = SPRITE_Y - round(hop)
+	else:
+		_walk_t = 0.0
+		$Sprite2D.position.y = SPRITE_Y
+		if hp > 0:
+			$Sprite2D.play("idle")
+	$Dust.emitting = moving
 	if hp > 0:
 		var blink := _invuln_timer > 0.0 and int(_invuln_timer * 20.0) % 2 == 0
 		$Sprite2D.modulate.a = 0.5 if is_rolling() or blink else 1.0
