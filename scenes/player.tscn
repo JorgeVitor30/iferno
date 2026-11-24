@@ -8,35 +8,35 @@ radius = 5.0
 
 [sub_resource type="AtlasTexture" id="f0"]
 atlas = ExtResource("2")
-region = Rect2(0, 0, 19, 31)
+region = Rect2(0, 0, 24, 39)
 
 [sub_resource type="AtlasTexture" id="f1"]
 atlas = ExtResource("2")
-region = Rect2(19, 0, 19, 31)
+region = Rect2(24, 0, 24, 39)
 
 [sub_resource type="AtlasTexture" id="f2"]
 atlas = ExtResource("2")
-region = Rect2(38, 0, 19, 31)
+region = Rect2(48, 0, 24, 39)
 
 [sub_resource type="AtlasTexture" id="f3"]
 atlas = ExtResource("2")
-region = Rect2(57, 0, 19, 31)
+region = Rect2(72, 0, 24, 39)
 
 [sub_resource type="AtlasTexture" id="f4"]
 atlas = ExtResource("2")
-region = Rect2(76, 0, 19, 31)
+region = Rect2(96, 0, 24, 39)
 
 [sub_resource type="AtlasTexture" id="f5"]
 atlas = ExtResource("2")
-region = Rect2(95, 0, 19, 31)
+region = Rect2(120, 0, 24, 39)
 
 [sub_resource type="AtlasTexture" id="f6"]
 atlas = ExtResource("2")
-region = Rect2(114, 0, 19, 31)
+region = Rect2(144, 0, 24, 39)
 
 [sub_resource type="AtlasTexture" id="f7"]
 atlas = ExtResource("2")
-region = Rect2(133, 0, 19, 31)
+region = Rect2(168, 0, 24, 39)
 
 [sub_resource type="SpriteFrames" id="frames"]
 animations = [{
@@ -77,10 +77,14 @@ script = ExtResource("1")
 shape = SubResource("1")
 
 [node name="Sprite2D" type="AnimatedSprite2D" parent="."]
-position = Vector2(0, -13)
+position = Vector2(0, -17)
 sprite_frames = SubResource("frames")
 animation = &"idle"
 autoplay = "idle"
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
 
 [node name="Gun" type="Line2D" parent="."]
 points = PackedVector2Array(0, 0, 0, 0)
