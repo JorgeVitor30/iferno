@@ -14,7 +14,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "assets/sprites/raw"
 OUT = ROOT / "assets/sprites/student"
-CELL_W, CELL_H = 32, 44
+CELL_W, CELL_H = 48, 48
 SCALE = 0.5
 
 # nome da animação -> (arquivo bruto, nº de quadros)
@@ -29,6 +29,11 @@ SHEETS = {
     "walk_se": ("walk_se.png", 8),
     "idle_ne": ("idle_ne.png", 8),
     "walk_ne": ("walk_ne.png", 8),
+    "roll_s": ("roll_s.png", 8),
+    "roll_e": ("roll_e.png", 8),
+    "roll_n": ("roll_n.png", 8),
+    "roll_se": ("roll_se.png", 8),
+    "roll_ne": ("roll_ne.png", 8),
 }
 
 
