@@ -24,9 +24,41 @@ var _invuln_timer := 0.0
 var hp := 0
 const SPRITE_Y := 2.0 # pé do sprite (pivô da gingada)
 
+# 8 direções a partir de 5 vistas desenhadas; as da esquerda espelham as da direita.
+# Índice = ângulo do mouse em fatias de 45°, começando na direita e girando no sentido horário.
+const CELL := Vector2i(32, 44) # tamanho de cada quadro (ver tools/build_student_sheets.py)
+const VIEWS := ["s", "se", "e", "ne", "n"]
+const DIR_TO_VIEW := [
+	["e", false], ["se", false], ["s", false], ["se", true],
+	["e", true], ["ne", true], ["n", false], ["ne", false],
+]
+const ANIM_FPS := {"idle": 8.0, "walk": 12.0}
+
+var _view := "s"
+
 func _ready() -> void:
 	hp = max_hp
 	health_changed.emit(hp, max_hp)
+	$Sprite2D.sprite_frames = _build_frames()
+	$Sprite2D.play("idle_s")
+
+## Monta as animações idle_<vista> e walk_<vista> a partir das folhas em assets/sprites/student/.
+func _build_frames() -> SpriteFrames:
+	var sf := SpriteFrames.new()
+	sf.remove_animation(&"default")
+	for kind in ANIM_FPS:
+		for view in VIEWS:
+			var anim := "%s_%s" % [kind, view]
+			var tex: Texture2D = load("res://assets/sprites/student/%s.png" % anim)
+			sf.add_animation(anim)
+			sf.set_animation_speed(anim, ANIM_FPS[kind])
+			sf.set_animation_loop(anim, true)
+			for i in tex.get_width() / CELL.x:
+				var at := AtlasTexture.new()
+				at.atlas = tex
+				at.region = Rect2(i * CELL.x, 0, CELL.x, CELL.y)
+				sf.add_frame(anim, at)
+	return sf
 
 func take_damage(amount: int = 1) -> void:
 	if hp <= 0 or is_rolling() or _invuln_timer > 0.0:
@@ -77,24 +109,26 @@ func _shoot() -> void:
 
 func _process(delta: float) -> void:
 	var aim := (get_global_mouse_position() - global_position).normalized()
-	$Sprite2D.flip_h = aim.x < 0.0
-	# Andar estilizado: pernas alternando + gingada pros lados + 1px de pulinho
-	# no passo. Parado: idle ofegante.
 	var spr: AnimatedSprite2D = $Sprite2D
+	# Olha pro mouse: escolhe a mais próxima das 8 direções.
+	var dir := wrapi(roundi(aim.angle() / (PI / 4.0)), 0, 8)
+	_view = DIR_TO_VIEW[dir][0]
+	spr.flip_h = DIR_TO_VIEW[dir][1]
+	# Andando: animação de andar na direção que olha + leve gingada. Parado: idle ofegante.
 	var moving := velocity.length() > 10.0 and not is_rolling()
+	if hp > 0:
+		_play_keep_phase(spr, ("walk_" if moving else "idle_") + _view)
 	if moving:
-		spr.play("walk")
 		spr.speed_scale = clampf(velocity.length() / speed, 0.5, 1.2)
-		# fase sincronizada com os quadros: pico da gingada no meio do quadro com perna levantada
-		var ph := (spr.frame + spr.frame_progress + 0.5) / 4.0 * TAU
+		# 8 quadros = 2 passos: a gingada vai e volta duas vezes por ciclo
+		var count := spr.sprite_frames.get_frame_count(spr.animation)
+		var ph := (spr.frame + spr.frame_progress) / count * TAU * 2.0
 		spr.rotation = sin(ph) * deg_to_rad(walk_tilt_deg)
-		spr.position.y = SPRITE_Y - round(absf(sin(ph)))
 	else:
 		spr.rotation = lerp_angle(spr.rotation, 0.0, minf(delta * 20.0, 1.0))
-		spr.position.y = SPRITE_Y
 		spr.speed_scale = 1.0
-		if hp > 0:
-			spr.play("idle")
+	# Arma atrás do corpo quando mira pra cima.
+	$Gun.z_index = -1 if aim.y < -0.3 else 0
 	$Dust.emitting = moving
 	if hp > 0:
 		var blink := _invuln_timer > 0.0 and int(_invuln_timer * 20.0) % 2 == 0
@@ -102,6 +136,19 @@ func _process(delta: float) -> void:
 	# "Arma" placeholder: linha saindo da altura da mão.
 	var hand := Vector2(0, -15)
 	$Gun.points = PackedVector2Array([hand + aim * 4.0, hand + aim * 12.0])
+
+## Troca de animação sem reiniciar o passo (ex.: girar o mouse enquanto anda).
+func _play_keep_phase(spr: AnimatedSprite2D, anim: String) -> void:
+	if spr.animation == anim:
+		if not spr.is_playing():
+			spr.play(anim)
+		return
+	var same_kind := String(spr.animation).get_slice("_", 0) == anim.get_slice("_", 0)
+	var frame := spr.frame
+	var progress := spr.frame_progress
+	spr.play(anim)
+	if same_kind:
+		spr.set_frame_and_progress(frame, progress)
 
 func _draw() -> void:
 	# Sombra no pé
