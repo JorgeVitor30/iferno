@@ -19,8 +19,74 @@
   },
   {
     "asset_id": "05aed349-d0ae-4f3f-b96f-02fe16c7ec36",
-    "file": "assets/sprites/student_idle_sheet_raw.png",
+    "file": "assets/sprites/raw/idle_s.png",
     "sha12": "703f75b1c394",
-    "label": "estudante idle ofegante (8 quadros, 84x84 cada)"
+    "label": "estudante idle frente (ofegante)"
+  },
+  {
+    "asset_id": "0f8e458e-bccd-40c4-ac70-aeae11b69944",
+    "file": "assets/sprites/raw/walk_s.png",
+    "sha12": "5d217eea725b",
+    "label": "estudante andar frente"
+  },
+  {
+    "asset_id": "a49d33a0-1603-4f3e-a29b-539fcec7eadf",
+    "file": "assets/sprites/raw/idle_e.png",
+    "sha12": "2ad9e49149a2",
+    "label": "estudante idle lado direito"
+  },
+  {
+    "asset_id": "cad98966-1839-40ca-8fad-8dde68856b75",
+    "file": "assets/sprites/raw/walk_e.png",
+    "sha12": "b44f95324cb4",
+    "label": "estudante andar lado direito"
+  },
+  {
+    "asset_id": "1966874b-6b31-49bd-83c3-e2a0949ef769",
+    "file": "assets/sprites/raw/idle_n.png",
+    "sha12": "5eff12009a23",
+    "label": "estudante idle costas"
+  },
+  {
+    "asset_id": "625c1d2c-7e1c-44c4-81e9-07443e31a2ba",
+    "file": "assets/sprites/raw/walk_n.png",
+    "sha12": "454d55b0ea7c",
+    "label": "estudante andar costas"
+  },
+  {
+    "asset_id": "ad759b8b-7e45-4e76-b81d-c4d1b024fda7",
+    "file": "assets/sprites/raw/idle_se.png",
+    "sha12": "e6bf1982fb4b",
+    "label": "estudante idle diagonal frente-direita"
+  },
+  {
+    "asset_id": "29f3e1c6-b6f7-4733-9bb8-20c1354738c8",
+    "file": "assets/sprites/raw/walk_se.png",
+    "sha12": "fd5e895a9ab9",
+    "label": "estudante andar diagonal frente-direita"
+  },
+  {
+    "asset_id": "fe1d050b-5b45-41aa-ba15-33f9a896cedb",
+    "file": "assets/sprites/raw/idle_ne.png",
+    "sha12": "c0c4f917d31e",
+    "label": "estudante idle diagonal costas-direita"
+  },
+  {
+    "asset_id": "4147426c-a4b2-4a2c-8d58-aa653991fb83",
+    "file": "assets/sprites/raw/walk_ne.png",
+    "sha12": "8f3ffc99e246",
+    "label": "estudante andar diagonal costas-direita"
+  },
+  {
+    "asset_id": "00b9f638-3606-465c-bcd6-e838b9bb84a1",
+    "file": "assets/sprites/raw/diag_down_right.png",
+    "sha12": "6e5f8fe81683",
+    "label": "estudante base diagonal frente-direita"
+  },
+  {
+    "asset_id": "b0d4f944-8ad2-45e1-b9b4-69836ad2ac63",
+    "file": "assets/sprites/raw/diag_up_right.png",
+    "sha12": "86e86d1f38ff",
+    "label": "estudante base diagonal costas-direita"
   }
 ]
