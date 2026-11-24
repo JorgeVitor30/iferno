@@ -13,13 +13,15 @@ signal died
 @export var accel := 900.0     # quão rápido chega na velocidade máxima
 @export var friction := 1100.0 # quão rápido para ao soltar as teclas
 @export var walk_tilt_deg := 3.0 # quanto o boneco ginga pros lados ao andar
-@export var roll_distance := 44.0 # quanto o dodge anda (o boneco tem ~39px de altura)
-@export var roll_time := 0.4      # duração do dodge (invencível o tempo todo)
+@export var roll_distance := 64.0 # quanto o dodge anda (o boneco tem ~39px de altura)
+@export var roll_time := 0.45     # duração do dodge (invencível o tempo todo)
+@export var roll_cooldown := 0.4  # espera depois do dodge antes de poder rolar de novo
 @export var roll_hop := 5.0       # altura do pulinho no meio do dodge, em pixels
 @export var fire_rate := 0.15
 
 var _roll_timer := 0.0
 var _roll_dir := Vector2.ZERO
+var _roll_cd := 0.0
 var _fire_cd := 0.0
 var _invuln_timer := 0.0
 var hp := 0
@@ -88,6 +90,7 @@ func is_rolling() -> bool:
 func _physics_process(delta: float) -> void:
 	var input := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	_fire_cd -= delta
+	_roll_cd = maxf(_roll_cd - delta, 0.0)
 	_invuln_timer = max(_invuln_timer - delta, 0.0)
 	if Input.is_action_just_pressed("debug_hit"): # H = tomar dano (teste)
 		take_damage()
@@ -96,10 +99,12 @@ func _physics_process(delta: float) -> void:
 		var t := 1.0 - _roll_timer / roll_time
 		velocity = _roll_dir * (2.0 * roll_distance / roll_time) * (1.0 - t)
 		_roll_timer -= delta
+		if _roll_timer <= 0.0:
+			_roll_cd = roll_cooldown
 	else:
 		var rate := accel if input != Vector2.ZERO else friction
 		velocity = velocity.move_toward(input * speed, rate * delta)
-		if Input.is_action_just_pressed("dodge") and input != Vector2.ZERO:
+		if Input.is_action_just_pressed("dodge") and input != Vector2.ZERO and _roll_cd <= 0.0:
 			_roll_timer = roll_time
 			_roll_dir = input.normalized()
 			_start_roll_anim()
