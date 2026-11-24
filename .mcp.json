@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "godot": {
+      "command": "npx",
+      "args": ["-y", "@coding-solo/godot-mcp"],
+      "env": {
+        "GODOT_PATH": "/home/jorge/.steam/debian-installation/steamapps/common/Godot Engine/godot.x11.opt.tools.64"
+      }
+    }
+  }
+}
