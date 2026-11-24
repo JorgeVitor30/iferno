@@ -66,18 +66,24 @@ func _shoot() -> void:
 	_fire_cd = fire_rate
 	var dir := (get_global_mouse_position() - global_position).normalized()
 	var b := BULLET.instantiate()
-	b.global_position = global_position + Vector2(0, -12) + dir * 12.0
+	b.global_position = global_position + Vector2(0, -15) + dir * 12.0
 	b.direction = dir
 	get_parent().add_child(b)
 
 func _process(_delta: float) -> void:
 	var aim := (get_global_mouse_position() - global_position).normalized()
 	$Sprite2D.flip_h = aim.x < 0.0
+	# Parado: idle ofegante. Andando: segura o 1º quadro (até termos animação de andar).
+	if velocity.is_zero_approx():
+		$Sprite2D.play("idle")
+	else:
+		$Sprite2D.pause()
+		$Sprite2D.frame = 0
 	if hp > 0:
 		var blink := _invuln_timer > 0.0 and int(_invuln_timer * 20.0) % 2 == 0
 		$Sprite2D.modulate.a = 0.5 if is_rolling() or blink else 1.0
 	# "Arma" placeholder: linha saindo da altura da mão.
-	var hand := Vector2(0, -12)
+	var hand := Vector2(0, -15)
 	$Gun.points = PackedVector2Array([hand + aim * 4.0, hand + aim * 12.0])
 
 func _draw() -> void:
