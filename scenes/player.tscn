@@ -14,7 +14,7 @@ shape = SubResource("1")
 [node name="Sprite2D" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, 2)
 centered = false
-offset = Vector2(-16, -44)
+offset = Vector2(-24, -48)
 
 [node name="Dust" type="CPUParticles2D" parent="."]
 show_behind_parent = true

@@ -13,8 +13,9 @@ signal died
 @export var accel := 900.0     # quão rápido chega na velocidade máxima
 @export var friction := 1100.0 # quão rápido para ao soltar as teclas
 @export var walk_tilt_deg := 3.0 # quanto o boneco ginga pros lados ao andar
-@export var roll_speed := 190.0
-@export var roll_time := 0.35
+@export var roll_distance := 44.0 # quanto o dodge anda (o boneco tem ~39px de altura)
+@export var roll_time := 0.4      # duração do dodge (invencível o tempo todo)
+@export var roll_hop := 5.0       # altura do pulinho no meio do dodge, em pixels
 @export var fire_rate := 0.15
 
 var _roll_timer := 0.0
@@ -26,13 +27,14 @@ const SPRITE_Y := 2.0 # pé do sprite (pivô da gingada)
 
 # 8 direções a partir de 5 vistas desenhadas; as da esquerda espelham as da direita.
 # Índice = ângulo do mouse em fatias de 45°, começando na direita e girando no sentido horário.
-const CELL := Vector2i(32, 44) # tamanho de cada quadro (ver tools/build_student_sheets.py)
+const CELL := Vector2i(48, 48) # tamanho de cada quadro (ver tools/build_student_sheets.py)
 const VIEWS := ["s", "se", "e", "ne", "n"]
 const DIR_TO_VIEW := [
 	["e", false], ["se", false], ["s", false], ["se", true],
 	["e", true], ["ne", true], ["n", false], ["ne", false],
 ]
-const ANIM_FPS := {"idle": 8.0, "walk": 12.0}
+const ANIM_FPS := {"idle": 8.0, "walk": 12.0, "roll": 20.0}
+const ANIM_LOOP := {"idle": true, "walk": true, "roll": false}
 
 var _view := "s"
 
@@ -49,10 +51,13 @@ func _build_frames() -> SpriteFrames:
 	for kind in ANIM_FPS:
 		for view in VIEWS:
 			var anim := "%s_%s" % [kind, view]
-			var tex: Texture2D = load("res://assets/sprites/student/%s.png" % anim)
+			var path := "res://assets/sprites/student/%s.png" % anim
+			if not ResourceLoader.exists(path):
+				continue # vista ainda não gerada: _start_roll_anim() cai no andar
+			var tex: Texture2D = load(path)
 			sf.add_animation(anim)
 			sf.set_animation_speed(anim, ANIM_FPS[kind])
-			sf.set_animation_loop(anim, true)
+			sf.set_animation_loop(anim, ANIM_LOOP[kind])
 			for i in tex.get_width() / CELL.x:
 				var at := AtlasTexture.new()
 				at.atlas = tex
@@ -87,14 +92,17 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("debug_hit"): # H = tomar dano (teste)
 		take_damage()
 	if is_rolling():
+		# Impulso que perde força até parar: anda exatamente roll_distance.
+		var t := 1.0 - _roll_timer / roll_time
+		velocity = _roll_dir * (2.0 * roll_distance / roll_time) * (1.0 - t)
 		_roll_timer -= delta
-		velocity = _roll_dir * roll_speed
 	else:
 		var rate := accel if input != Vector2.ZERO else friction
 		velocity = velocity.move_toward(input * speed, rate * delta)
 		if Input.is_action_just_pressed("dodge") and input != Vector2.ZERO:
 			_roll_timer = roll_time
 			_roll_dir = input.normalized()
+			_start_roll_anim()
 		elif Input.is_action_pressed("shoot") and _fire_cd <= 0.0:
 			_shoot()
 	move_and_slide()
@@ -110,8 +118,19 @@ func _shoot() -> void:
 func _process(delta: float) -> void:
 	var aim := (get_global_mouse_position() - global_position).normalized()
 	var spr: AnimatedSprite2D = $Sprite2D
+	if is_rolling():
+		# Durante o dodge: animação de rolar na direção do movimento + pulinho em arco.
+		var t := 1.0 - _roll_timer / roll_time
+		spr.position.y = SPRITE_Y - round(sin(t * PI) * roll_hop)
+		spr.rotation = 0.0
+		$Dust.emitting = true
+		$Gun.visible = false
+		_update_blink()
+		return
+	spr.position.y = SPRITE_Y
+	$Gun.visible = true
 	# Olha pro mouse: escolhe a mais próxima das 8 direções.
-	var dir := wrapi(roundi(aim.angle() / (PI / 4.0)), 0, 8)
+	var dir := _dir_index(aim)
 	_view = DIR_TO_VIEW[dir][0]
 	spr.flip_h = DIR_TO_VIEW[dir][1]
 	# Andando: animação de andar na direção que olha + leve gingada. Parado: idle ofegante.
@@ -130,12 +149,33 @@ func _process(delta: float) -> void:
 	# Arma atrás do corpo quando mira pra cima.
 	$Gun.z_index = -1 if aim.y < -0.3 else 0
 	$Dust.emitting = moving
-	if hp > 0:
-		var blink := _invuln_timer > 0.0 and int(_invuln_timer * 20.0) % 2 == 0
-		$Sprite2D.modulate.a = 0.5 if is_rolling() or blink else 1.0
+	_update_blink()
 	# "Arma" placeholder: linha saindo da altura da mão.
 	var hand := Vector2(0, -15)
 	$Gun.points = PackedVector2Array([hand + aim * 4.0, hand + aim * 12.0])
+
+func _dir_index(v: Vector2) -> int:
+	return wrapi(roundi(v.angle() / (PI / 4.0)), 0, 8)
+
+func _update_blink() -> void:
+	if hp > 0:
+		var blink := _invuln_timer > 0.0 and int(_invuln_timer * 20.0) % 2 == 0
+		$Sprite2D.modulate.a = 0.4 if blink else 1.0
+
+func _start_roll_anim() -> void:
+	var spr: AnimatedSprite2D = $Sprite2D
+	var dir := _dir_index(_roll_dir)
+	var view: String = DIR_TO_VIEW[dir][0]
+	spr.flip_h = DIR_TO_VIEW[dir][1]
+	spr.rotation = 0.0
+	var anim := "roll_" + view
+	if not spr.sprite_frames.has_animation(anim):
+		anim = "walk_" + view
+	spr.play(anim)
+	spr.frame = 0
+	# encaixa a animação inteira na duração do dodge
+	var frames := spr.sprite_frames.get_frame_count(anim)
+	spr.speed_scale = frames / (roll_time * spr.sprite_frames.get_animation_speed(anim))
 
 ## Troca de animação sem reiniciar o passo (ex.: girar o mouse enquanto anda).
 func _play_keep_phase(spr: AnimatedSprite2D, anim: String) -> void:

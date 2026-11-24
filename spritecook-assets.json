@@ -88,5 +88,35 @@
     "file": "assets/sprites/raw/diag_up_right.png",
     "sha12": "86e86d1f38ff",
     "label": "estudante base diagonal costas-direita"
+  },
+  {
+    "asset_id": "8df62b68-e846-4917-a073-4263b34db681",
+    "file": "assets/sprites/raw/roll_s.png",
+    "sha12": "eeb28d77e7a6",
+    "label": "estudante dodge frente (pixel-engine-v1.5)"
+  },
+  {
+    "asset_id": "3c687319-bb25-4625-8713-363b23a1be49",
+    "file": "assets/sprites/raw/roll_e.png",
+    "sha12": "aa9c411dec3e",
+    "label": "estudante dodge lado direito (pixel-engine-v1.5)"
+  },
+  {
+    "asset_id": "3e3323a1-56df-4248-b3be-751cda090719",
+    "file": "assets/sprites/raw/roll_n.png",
+    "sha12": "e939b4fb456f",
+    "label": "estudante dodge costas (pixel-engine-v1.5)"
+  },
+  {
+    "asset_id": "ef8575c0-e415-496e-ad23-0b1aa906ad91",
+    "file": "assets/sprites/raw/roll_se.png",
+    "sha12": "8de73e552199",
+    "label": "estudante dodge diagonal frente-direita (pixel-engine-v1.5)"
+  },
+  {
+    "asset_id": "324de6da-59fa-46f9-b2a6-abe26223459b",
+    "file": "assets/sprites/raw/roll_ne.png",
+    "sha12": "c0bf79e78ae0",
+    "label": "estudante dodge diagonal costas-direita (pixel-engine-v1.5)"
   }
 ]
