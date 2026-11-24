@@ -73,6 +73,12 @@ func _shoot() -> void:
 func _process(_delta: float) -> void:
 	var aim := (get_global_mouse_position() - global_position).normalized()
 	$Sprite2D.flip_h = aim.x < 0.0
+	# Parado: idle ofegante. Andando: segura o 1º quadro (até termos animação de andar).
+	if velocity.is_zero_approx():
+		$Sprite2D.play("idle")
+	else:
+		$Sprite2D.pause()
+		$Sprite2D.frame = 0
 	if hp > 0:
 		var blink := _invuln_timer > 0.0 and int(_invuln_timer * 20.0) % 2 == 0
 		$Sprite2D.modulate.a = 0.5 if is_rolling() or blink else 1.0

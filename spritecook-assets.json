@@ -16,5 +16,11 @@
     "file": "assets/sprites/student.png",
     "sha12": "ad7512a31427",
     "label": "estudante base (personagem topdown)"
+  },
+  {
+    "asset_id": "05aed349-d0ae-4f3f-b96f-02fe16c7ec36",
+    "file": "assets/sprites/student_idle_sheet_raw.png",
+    "sha12": "703f75b1c394",
+    "label": "estudante idle ofegante (8 quadros, 84x84 cada)"
   }
 ]
