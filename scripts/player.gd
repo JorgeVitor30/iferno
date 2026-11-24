@@ -10,6 +10,9 @@ signal died
 @export var invuln_time := 0.8 # invencibilidade depois de tomar hit
 
 @export var speed := 90.0
+@export var accel := 900.0     # quão rápido chega na velocidade máxima
+@export var friction := 1100.0 # quão rápido para ao soltar as teclas
+@export var walk_tilt_deg := 3.0 # quanto o boneco ginga pros lados ao andar
 @export var roll_speed := 190.0
 @export var roll_time := 0.35
 @export var fire_rate := 0.15
@@ -19,6 +22,7 @@ var _roll_dir := Vector2.ZERO
 var _fire_cd := 0.0
 var _invuln_timer := 0.0
 var hp := 0
+const SPRITE_Y := 2.0 # pé do sprite (pivô da gingada)
 
 func _ready() -> void:
 	hp = max_hp
@@ -54,7 +58,8 @@ func _physics_process(delta: float) -> void:
 		_roll_timer -= delta
 		velocity = _roll_dir * roll_speed
 	else:
-		velocity = input * speed
+		var rate := accel if input != Vector2.ZERO else friction
+		velocity = velocity.move_toward(input * speed, rate * delta)
 		if Input.is_action_just_pressed("dodge") and input != Vector2.ZERO:
 			_roll_timer = roll_time
 			_roll_dir = input.normalized()
@@ -70,15 +75,27 @@ func _shoot() -> void:
 	b.direction = dir
 	get_parent().add_child(b)
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	var aim := (get_global_mouse_position() - global_position).normalized()
 	$Sprite2D.flip_h = aim.x < 0.0
-	# Parado: idle ofegante. Andando: segura o 1º quadro (até termos animação de andar).
-	if velocity.is_zero_approx():
-		$Sprite2D.play("idle")
+	# Andar estilizado: pernas alternando + gingada pros lados + 1px de pulinho
+	# no passo. Parado: idle ofegante.
+	var spr: AnimatedSprite2D = $Sprite2D
+	var moving := velocity.length() > 10.0 and not is_rolling()
+	if moving:
+		spr.play("walk")
+		spr.speed_scale = clampf(velocity.length() / speed, 0.5, 1.2)
+		# fase sincronizada com os quadros: pico da gingada no meio do quadro com perna levantada
+		var ph := (spr.frame + spr.frame_progress + 0.5) / 4.0 * TAU
+		spr.rotation = sin(ph) * deg_to_rad(walk_tilt_deg)
+		spr.position.y = SPRITE_Y - round(absf(sin(ph)))
 	else:
-		$Sprite2D.pause()
-		$Sprite2D.frame = 0
+		spr.rotation = lerp_angle(spr.rotation, 0.0, minf(delta * 20.0, 1.0))
+		spr.position.y = SPRITE_Y
+		spr.speed_scale = 1.0
+		if hp > 0:
+			spr.play("idle")
+	$Dust.emitting = moving
 	if hp > 0:
 		var blink := _invuln_timer > 0.0 and int(_invuln_timer * 20.0) % 2 == 0
 		$Sprite2D.modulate.a = 0.5 if is_rolling() or blink else 1.0
