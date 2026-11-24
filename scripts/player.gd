@@ -12,7 +12,7 @@ signal died
 @export var speed := 90.0
 @export var accel := 900.0     # quão rápido chega na velocidade máxima
 @export var friction := 1100.0 # quão rápido para ao soltar as teclas
-@export var walk_tilt_deg := 8.0 # quanto o boneco ginga pros lados ao andar
+@export var walk_tilt_deg := 4.0 # quanto o boneco ginga pros lados ao andar
 @export var roll_speed := 190.0
 @export var roll_time := 0.35
 @export var fire_rate := 0.15
