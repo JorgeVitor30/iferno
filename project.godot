@@ -9,6 +9,7 @@ config/features=PackedStringArray("4.7", "GL Compatibility")
 [autoload]
 
 GlobalInput="*res://scripts/global_input.gd"
+PixelFont="*res://scripts/pixel_font.gd"
 
 [display]
 window/size/viewport_width=640

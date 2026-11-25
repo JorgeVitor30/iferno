@@ -547,7 +547,8 @@ func _bell_board(n: Node2D, x: float, fy: float) -> void:
 	Fx.text(n, Vector2(b.position.x + 4, b.position.y + 9), "P(passar)=3%", Color("ffd966"), 7)
 
 func _blackboard(n: Node2D, x: float, fy: float, text: String) -> void:
-	var b := Rect2(x - 52, fy + 4, 104, 20)
+	var bw := maxf(104.0, Fx.text_width(text) + 12.0)
+	var b := Rect2(x - bw / 2.0, fy + 4, bw, 20)
 	n.draw_rect(b.grow(2), Color("7a5236"))
 	n.draw_rect(b, Color("2a4a3a"))
 	Fx.text(n, Vector2(b.position.x, b.position.y + 13), text, Color("e8f0e0"), 8, b.size.x, HORIZONTAL_ALIGNMENT_CENTER)
@@ -563,14 +564,14 @@ func _clock(n: Node2D, x: float, fy: float) -> void:
 	n.draw_line(c, c + Vector2.from_angle(t * 0.05 - PI / 2) * 3.0, OUTLINE, 1.0)
 
 func _plaque(n: Node2D, x: float, fy: float, text: String, bg: Color) -> void:
-	var w := maxf(text.length() * 5.0 + 10.0, 40.0)
+	var w := maxf(Fx.text_width(text) + 10.0, 40.0)
 	var b := Rect2(x - w / 2.0, fy + 8, w, 12)
 	n.draw_rect(b.grow(1), OUTLINE)
 	n.draw_rect(b, bg)
 	Fx.text(n, Vector2(b.position.x, b.position.y + 9), text, Color("f4e4c0"), 7, w, HORIZONTAL_ALIGNMENT_CENTER)
 
 func _banner(n: Node2D, x: float, fy: float, text: String) -> void:
-	var w := 130.0
+	var w := maxf(130.0, Fx.text_width(text) + 14.0)
 	var b := Rect2(x - w / 2.0, fy + 5, w, 15)
 	n.draw_rect(b.grow(1), OUTLINE)
 	n.draw_rect(b, Color("b83a3a"))
@@ -596,7 +597,7 @@ func _hazard(n: Node2D, x: float, fy: float) -> void:
 	n.draw_rect(Rect2(x - 1, fy + 17, 2, 2), OUTLINE)
 
 func _menu(n: Node2D, x: float, fy: float) -> void:
-	var b := Rect2(x - 36, fy + 3, 72, 24)
+	var b := Rect2(x - 44, fy + 3, 88, 24)
 	n.draw_rect(b.grow(2), Color("7a5236"))
 	n.draw_rect(b, Color("2a2a30"))
 	Fx.text(n, Vector2(b.position.x + 3, b.position.y + 9), "PF ..... R$18", Color("ffd966"), 7)

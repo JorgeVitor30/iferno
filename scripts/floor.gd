@@ -182,7 +182,7 @@ func _build_corridor(a: Room, b: Room) -> void:
 			var pcol := Color.from_hsv(randf(), 0.45, 0.85)
 			var deco := Node2D.new()
 			deco.draw.connect(func():
-				var pw := text.length() * 5.0 + 8.0
+				var pw := Fx.text_width(text) + 8.0
 				var pr := Rect2(px - pw / 2.0, face_r.position.y + 7, pw, 13)
 				deco.draw_rect(pr.grow(1), Room.OUTLINE)
 				deco.draw_rect(pr, pcol)

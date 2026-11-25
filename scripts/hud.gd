@@ -34,7 +34,7 @@ func _ready() -> void:
 	_counter.position = Vector2(8, 20)
 	_counter.visible = false
 	add_child(_counter)
-	_style(_banner, 20, Color.WHITE)
+	_style(_banner, Fx.BIG, Color.WHITE)
 	_banner.position = Vector2(0, 92)
 	_banner.size = Vector2(640, 30)
 	_banner.pivot_offset = Vector2(320, 15)
@@ -45,10 +45,10 @@ func _ready() -> void:
 
 func _style(l: Label, size: int, color: Color) -> void:
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	l.add_theme_font_size_override("font_size", size)
+	l.add_theme_font_size_override("font_size", Fx.px(size))
 	l.add_theme_color_override("font_color", color)
 	l.add_theme_color_override("font_outline_color", OUTLINE)
-	l.add_theme_constant_override("outline_size", 5 if size >= 16 else 4)
+	l.add_theme_constant_override("outline_size", 4 if size >= 18 else 2)
 
 func setup(level: Node) -> void:
 	_map = MINIMAP.new()

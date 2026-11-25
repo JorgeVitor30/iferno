@@ -127,7 +127,7 @@ func _draw() -> void:
 			draw_set_transform(up)
 			draw_rect(Rect2(-4, -6, 9, 11), OUTLINE)
 			draw_rect(Rect2(-3, -5, 7, 9), Color("a8d8a0"))
-			draw_string(ThemeDB.fallback_font, Vector2(-3, 3), digit, HORIZONTAL_ALIGNMENT_CENTER, 7, 9, OUTLINE)
+			Fx.text(self, Vector2(-3, 3), digit, OUTLINE, Fx.SMALL, 7, HORIZONTAL_ALIGNMENT_CENTER)
 		"calculadora":
 			draw_set_transform(up - Vector2(0, 4), _spin * 0.6, Vector2.ONE)
 			draw_rect(Rect2(-7, -10, 14, 20), OUTLINE)
