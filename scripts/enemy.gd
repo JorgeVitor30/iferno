@@ -77,7 +77,7 @@ func _ready() -> void:
 	_hurtbox.add_child(hb)
 	add_child(_hurtbox)
 	player = get_tree().get_first_node_in_group("player") as Node2D
-	_bubble_cd = randf_range(1.5, 5.0)
+	_bubble_cd = randf_range(5.0, 12.0)
 
 func _setup() -> void:
 	pass
@@ -120,7 +120,7 @@ func _physics_process(delta: float) -> void:
 		hurt_player()
 	_bubble_cd -= delta
 	if _bubble_cd <= 0.0 and lines.size() > 0:
-		_bubble_cd = randf_range(6.0, 12.0)
+		_bubble_cd = randf_range(16.0, 30.0) # falam bem de vez em quando
 		say(lines[randi() % lines.size()])
 	queue_redraw()
 

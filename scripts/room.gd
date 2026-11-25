@@ -729,7 +729,6 @@ func _on_enemy_died(_e: Enemy) -> void:
 	if _alive > 0:
 		return
 	if _wave + 1 < _waves.size():
-		get_tree().call_group("hud", "banner", "ONDA %d/%d" % [_wave + 2, _waves.size()], Color("ffd966"))
 		await get_tree().create_timer(1.0).timeout
 		_spawn_wave(_wave + 1)
 	else:
