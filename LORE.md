@@ -25,7 +25,23 @@ São **4 jogadores**, todos estudantes tentando se formar.
 ## Inimigos e chefes
 
 - **Chefes (bosses)** são os **professores**, e outras figuras da faculdade também entram nessa categoria.
-- Inimigos comuns: _a definir_ (sempre dentro do tema faculdade).
+- Inimigos comuns (todos atacam com coisas de papel ou do dia a dia da faculdade):
+
+| Inimigo | Tipo | Ataque |
+|---|---|---|
+| Zelador | corpo a corpo | esfregada em arco com o esfregão; deixa poças e a plaquinha de piso molhado |
+| Veterano do trote | corpo a corpo, rápido | mira e investe com o balde de tinta, sujando o chão |
+| Professor | à distância | leque de provas corrigidas (com nota vermelha) |
+| Estagiário | à distância, fraco | aviõezinhos de papel que perseguem o jogador |
+| Coordenadora | elite (guarda a escadaria) | anel e espiral de bolinhas de papel, leque de provas |
+
+## Andares
+
+- Cada andar é gerado na hora: salas ligadas por corredores. Começa na **portaria** (onde o ônibus deixa os estudantes) e termina na **escadaria**, guardada pela coordenadora.
+- Salas: sala de aula, biblioteca, laboratório de química, cantina, sala dos professores, xerox.
+- Entrou numa sala com inimigos: a porta tranca com grade e fita de "interditado" até todo mundo cair.
+- Café cura 1 de vida.
+- Andar 1 = entrada da faculdade. Os de cima (bloco de aulas, biblioteca central...) ainda reaproveitam as mesmas salas, só que mais difíceis.
 
 ## Armas e upgrades
 

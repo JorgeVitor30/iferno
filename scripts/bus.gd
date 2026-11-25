@@ -40,6 +40,7 @@ func _add_body(size: Vector2) -> void:
 
 func _add_door() -> void:
 	var door := Area2D.new()
+	door.collision_mask = 2 # camada do jogador
 	var col := CollisionShape2D.new()
 	var rect := RectangleShape2D.new()
 	rect.size = Vector2(22, 10)

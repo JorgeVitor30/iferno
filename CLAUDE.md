@@ -7,5 +7,7 @@
 - GDScript com tipagem estática, tabs, comentários em português.
 - Pastas: `scenes/`, `scripts/`, `assets/{sprites,tilesets,sfx,music,fonts}`.
 - Placeholders são desenhados com `_draw()` até existirem sprites.
+- Camadas de colisão: 1 = paredes/cenário, 2 = jogador, 3 = inimigos (corpo), 4 = hurtbox dos inimigos (onde o tiro do jogador acerta).
+- Andares: `scenes/floor.tscn` + `scripts/floor.gd` (geração), `room.gd` (sala, portas, ondas), `scripts/enemies/*.gd` (herdam de `enemy.gd`).
 - Commits e branches: seguir `COMMITS.md` (ex.: branch `feat/inimigo-espiral`, commit `feat(enemy): ...`). `main` sempre roda.
 - Lore e tema: ver `LORE.md` (faculdade; 4 estudantes presos querendo se formar; bosses = professores; armas/upgrades temáticos). Todo conteúdo novo deve seguir esse tema.

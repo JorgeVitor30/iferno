@@ -42,6 +42,9 @@ var _view := "s"
 
 func _ready() -> void:
 	add_to_group("player")
+	# Camadas de colisão: 1 = paredes/cenário, 2 = jogador, 3 = inimigos, 4 = hurtbox dos inimigos.
+	collision_layer = 2
+	collision_mask = 1
 	hp = max_hp
 	health_changed.emit(hp, max_hp)
 	$Sprite2D.sprite_frames = _build_frames()
@@ -77,13 +80,19 @@ func take_damage(amount: int = 1) -> void:
 	if hp == 0:
 		_die()
 
+func heal(amount: int = 1) -> void:
+	if hp <= 0:
+		return
+	hp = mini(hp + amount, max_hp)
+	health_changed.emit(hp, max_hp)
+
 func _die() -> void:
 	set_physics_process(false)
 	$Sprite2D.modulate = Color(1, 0.3, 0.3)
 	died.emit()
-	# Por enquanto: reinicia a sala depois de 1s.
-	await get_tree().create_timer(1.0).timeout
-	get_tree().reload_current_scene()
+	# Reprovou: volta pra frente da faculdade e recomeça a run.
+	await get_tree().create_timer(1.6).timeout
+	get_tree().change_scene_to_file("res://scenes/main.tscn")
 
 func is_rolling() -> bool:
 	return _roll_timer > 0.0 # use isso pra invencibilidade no roll

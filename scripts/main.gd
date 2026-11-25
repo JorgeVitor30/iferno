@@ -6,7 +6,7 @@ extends Node2D
 const FLOOR_TEX := preload("res://assets/tilesets/floor_tile.png")
 const WALL_TEX := preload("res://assets/tilesets/wall_front.png")
 const FENCE_TEX := preload("res://assets/props/fence.png")
-const RUN_SCENE := "res://scenes/run.tscn"
+const RUN_SCENE := "res://scenes/floor.tscn" # 1º andar: entrada da faculdade
 
 const ROOM := Rect2(24, 56, 912, 464)  # área de chão andável (maior que a tela: a câmera segue o jogador)
 const WALL_FACE_H := 31.0              # altura da face da parede de cima
@@ -97,6 +97,8 @@ func _add_fence(x0: float, x1: float) -> void:
 
 func _on_bus_boarded(_who: Node2D) -> void:
 	# Jogador some dentro do ônibus, ônibus arranca, tela escurece e começa a run.
+	FloorLevel.floor_num = 1
+	FloorLevel.carry_hp = -1
 	player.hide()
 	player.set_physics_process(false)
 	player.set_process(false)
