@@ -18,7 +18,8 @@ func _setup() -> void:
 	sprite_tex = preload("res://assets/sprites/enemies/coordenadora.png")
 	display_name = "COORDENADORA"
 	elite = true
-	head_y = 46.0
+	head_y = 58.0
+	hurt_size = Vector2(24, 54)
 	max_hp = 28 + floor_level * 8
 	speed = 24.0
 	hit_color = BLAZER

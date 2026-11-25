@@ -24,9 +24,9 @@ var drop_chance := 0.1
 var body_scale := 1.0
 # Tamanho "em pixels de verdade" (sem escala): bonecos grandes desenhados no tamanho nativo
 # mudam isso no _setup() em vez de usar body_scale (que borra o pixel).
-var hurt_size := Vector2(18, 38) # hurtbox (onde o tiro acerta)
+var hurt_size := Vector2(22, 50) # hurtbox (onde o tiro acerta)
 var col_radius := 5.0            # círculo do pé (bate em parede)
-var head_y := 42.0               # altura da cabeça (balão de fala, "!")
+var head_y := 54.0               # altura da cabeça (balão de fala, "!")
 ## Sprite do SpriteCook (de frente). Se tiver, desenha ele em vez do boneco em código,
 ## animado aqui: passo, respiração, achatamento e virar pro lado do jogador.
 var sprite_tex: Texture2D
