@@ -360,5 +360,90 @@
     "asset_id": "884fe1f2-fd23-4484-ad72-956d88a314d2",
     "file": "assets/props/clean/raw/onibus.png",
     "label": "onibus (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "17738b77-c816-43f2-a36f-f020133a798e",
+    "file": "assets/props/clean/raw2/carteira.png",
+    "label": "carteira (reto, de frente, tamanho final)"
+  },
+  {
+    "asset_id": "7fdc6fb9-51b4-4d47-8a12-b2872b52ec9e",
+    "file": "assets/props/clean/raw2/mesa_prof.png",
+    "label": "mesa_prof (reto, de frente, tamanho final)"
+  },
+  {
+    "asset_id": "897c1abe-9cc1-4189-8fb9-c7adc416b251",
+    "file": "assets/props/clean/raw2/estante.png",
+    "label": "estante (reto, de frente, tamanho final)"
+  },
+  {
+    "asset_id": "6bce4953-5be9-42a6-8056-887e9d5cb05d",
+    "file": "assets/props/clean/raw2/armarios.png",
+    "label": "armarios (reto, de frente, tamanho final)"
+  },
+  {
+    "asset_id": "4040dacb-f94e-4dd6-9a2a-01fc374d1f59",
+    "file": "assets/props/clean/raw2/vending.png",
+    "label": "vending (reto, de frente, tamanho final)"
+  },
+  {
+    "asset_id": "1737654f-1a15-4658-98eb-05286c64c690",
+    "file": "assets/props/clean/raw2/bancada.png",
+    "label": "bancada (reto, de frente, tamanho final)"
+  },
+  {
+    "asset_id": "e99d21be-6ae0-42f9-b88d-32a87cdad27c",
+    "file": "assets/props/clean/raw2/mesa_cantina.png",
+    "label": "mesa_cantina (reto, de frente, tamanho final)"
+  },
+  {
+    "asset_id": "b6a1d892-4ec6-44a7-8d83-3ed3cf211ee1",
+    "file": "assets/props/clean/raw2/sofa.png",
+    "label": "sofa (reto, de frente, tamanho final)"
+  },
+  {
+    "asset_id": "9e75cbbb-c8ff-4cce-bb25-0959f603bfcf",
+    "file": "assets/props/clean/raw2/copiadora.png",
+    "label": "copiadora (reto, de frente, tamanho final)"
+  },
+  {
+    "asset_id": "8bb7e591-8f8b-45de-ac8e-7f68deda0a80",
+    "file": "assets/props/clean/raw2/balcao.png",
+    "label": "balcao (reto, de frente, tamanho final)"
+  },
+  {
+    "asset_id": "a100e610-3209-4c06-9794-e2aa50bce30d",
+    "file": "assets/props/clean/raw2/cabine.png",
+    "label": "cabine (reto, de frente, tamanho final)"
+  },
+  {
+    "asset_id": "449757f3-1398-442d-a73d-2206b770d011",
+    "file": "assets/props/clean/raw2/pc.png",
+    "label": "pc (reto, de frente, tamanho final)"
+  },
+  {
+    "asset_id": "64b6d529-c2da-4d34-b161-151f7b0c0a37",
+    "file": "assets/props/clean/raw2/poltronas.png",
+    "label": "poltronas (reto, de frente, tamanho final)"
+  },
+  {
+    "asset_id": "0a33c7cd-e5f1-407d-ad7f-ed3211daeafe",
+    "file": "assets/props/clean/raw2/pulpito.png",
+    "label": "pulpito (reto, de frente, tamanho final)"
+  },
+  {
+    "asset_id": "7871fecc-be7a-4df9-b30b-e063f87424b4",
+    "file": "assets/props/clean/raw2/banco.png",
+    "label": "banco (reto, de frente, tamanho final)"
+  },
+  {
+    "asset_id": "3eafdde1-d0c8-4860-9651-0e31048e594f",
+    "file": "assets/props/clean/raw2/mesa_piquenique.png",
+    "label": "mesa_piquenique (reto, de frente, tamanho final)"
+  },
+  {
+    "asset_id": "c789200c-982d-4a82-ab75-57477b1d010b",
+    "file": "assets/props/clean/raw2/onibus.png",
+    "label": "onibus (reto, de frente, tamanho final)"
   }
 ]

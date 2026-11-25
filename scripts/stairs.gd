@@ -15,9 +15,9 @@ func _ready() -> void:
 	collision_mask = 2
 	var col := CollisionShape2D.new()
 	var r := RectangleShape2D.new()
-	r.size = Vector2(40, 20)
+	r.size = Vector2(60, 30)
 	col.shape = r
-	col.position = Vector2(0, -22)
+	col.position = Vector2(0, -30)
 	add_child(col)
 	body_entered.connect(_on_body_entered)
 	scale = Vector2(0.1, 0.1)
@@ -34,18 +34,26 @@ func _on_body_entered(body: Node2D) -> void:
 	climbed.emit()
 
 func _draw() -> void:
-	# Buraco escuro + degraus subindo (mais claros lá em cima)
-	draw_rect(Rect2(-26, -50, 52, 50), OUTLINE)
-	for i in 6:
-		var y := -8.0 - i * 7.0
-		var c := Color("6a6478").lerp(Color("c8c4d4"), i / 5.0)
-		draw_rect(Rect2(-24, y - 6, 48, 6), c)
-		draw_rect(Rect2(-24, y, 48, 1), c.darkened(0.4))
-	draw_rect(Rect2(-26, -50, 2, 50), Color("8a90a0"))
-	draw_rect(Rect2(24, -50, 2, 50), Color("8a90a0"))
+	# Buraco escuro + degraus subindo (mais claros lá em cima), com corrimão
+	var w := 72.0
+	var h := 76.0
+	draw_rect(Rect2(-w / 2 - 2, -h - 2, w + 4, h + 4), OUTLINE)
+	draw_rect(Rect2(-w / 2, -h, w, h), Color("140c1c"))
+	for i in 8:
+		var y := -6.0 - i * 9.0
+		var c := Color("4a3d5a").lerp(Color("a89ab8"), i / 7.0)
+		draw_rect(Rect2(-w / 2 + 3, y - 7, w - 6, 7), c)
+		draw_rect(Rect2(-w / 2 + 3, y - 7, w - 6, 1), c.lightened(0.25))
+		draw_rect(Rect2(-w / 2 + 3, y, w - 6, 2), c.darkened(0.45))
+	for side: float in [-1.0, 1.0]:
+		var x := side * (w / 2 - 2)
+		draw_rect(Rect2(x - 2, -h, 4, h), Color("5c5670"))
+		draw_rect(Rect2(x - 2, -h, 1, h), Color("8a8498"))
+	# luz de saída lá em cima
+	draw_rect(Rect2(-w / 2 + 3, -h, w - 6, 4), Color(0.6, 1.0, 0.7, 0.35))
 	# Seta pulando
 	var bob := roundf(sin(_t * 5.0) * 3.0)
-	var a := Vector2(0, -66 + bob)
-	draw_colored_polygon(PackedVector2Array([a + Vector2(0, -8), a + Vector2(-8, 2), a + Vector2(8, 2)]), OUTLINE)
-	draw_colored_polygon(PackedVector2Array([a + Vector2(0, -6), a + Vector2(-6, 1), a + Vector2(6, 1)]), Color("3fd17a"))
-	Fx.text(self, Vector2(-50, -78 + bob), "PRÓXIMO ANDAR", Color("3fd17a"), 8, 100, HORIZONTAL_ALIGNMENT_CENTER)
+	var a := Vector2(0, -h - 18 + bob)
+	draw_colored_polygon(PackedVector2Array([a + Vector2(0, -10), a + Vector2(-10, 3), a + Vector2(10, 3)]), OUTLINE)
+	draw_colored_polygon(PackedVector2Array([a + Vector2(0, -8), a + Vector2(-8, 2), a + Vector2(8, 2)]), Color("3fd17a"))
+	Fx.text(self, Vector2(-60, -h - 32 + bob), "PRÓXIMO ANDAR", Color("3fd17a"), 11, 120, HORIZONTAL_ALIGNMENT_CENTER)

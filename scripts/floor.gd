@@ -6,7 +6,7 @@ extends Node2D
 ## aparece a escada pro próximo andar. A coordenadora é uma elite que aparece
 ## de surpresa em alguma sala comum.
 
-const CELL := Vector2(784, 560) # distância entre os centros de salas vizinhas
+const CELL := Vector2(1024, 720) # distância entre os centros de salas vizinhas
 const CORRIDOR_TINT := Color(0.86, 0.84, 0.9)
 const FLOOR_TEX := preload("res://assets/tilesets/clean/floor.png")
 const WALL_TEX := preload("res://assets/tilesets/clean/wall.png")

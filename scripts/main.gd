@@ -16,19 +16,19 @@ const ROAD := Rect2(24, 144, 912, 64)  # rua onde o ônibus para
 
 # Objetos de cenário (tipos de prop.gd) e a posição da base (onde encosta no chão).
 const PROPS := [
-	["arvore", Vector2(110, 270)],
-	["arvore", Vector2(850, 270)],
-	["arvore", Vector2(80, 430)],
-	["arvore", Vector2(880, 430)],
-	["poste", Vector2(330, 236)],
-	["poste", Vector2(630, 236)],
-	["lixeira", Vector2(660, 240)],
-	["mesa_piquenique", Vector2(250, 340)],
-	["mesa_piquenique", Vector2(710, 340)],
-	["banco", Vector2(230, 460)],
-	["banco", Vector2(730, 460)],
-	["vaso", Vector2(420, 240)],
-	["vaso", Vector2(540, 240)],
+	["arvore", Vector2(100, 300)],
+	["arvore", Vector2(860, 300)],
+	["arvore", Vector2(80, 470)],
+	["arvore", Vector2(880, 470)],
+	["poste", Vector2(300, 238)],
+	["poste", Vector2(660, 238)],
+	["lixeira", Vector2(700, 242)],
+	["mesa_piquenique", Vector2(260, 360)],
+	["mesa_piquenique", Vector2(700, 360)],
+	["banco", Vector2(240, 470)],
+	["banco", Vector2(720, 470)],
+	["vaso", Vector2(400, 244)],
+	["vaso", Vector2(560, 244)],
 ]
 const FENCE_Y := 505.0     # cerca embaixo, com uma abertura no meio
 const FENCE_GAP := 96.0

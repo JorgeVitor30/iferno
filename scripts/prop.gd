@@ -32,32 +32,32 @@ const CLOTH_L := Color("964a66")
 ## tamanho na tela (largura, altura) = tamanho do sprite, e faixa sólida (largura, altura)
 ## na base. Gerado a partir de assets/props/clean/ (tools/build_clean_props.py).
 const KINDS := {
-	"carteira": [Vector2(18, 16), Vector2(16, 6.0)],
-	"mesa_prof": [Vector2(27, 20), Vector2(24, 8)],
-	"estante": [Vector2(40, 38), Vector2(36, 10.0)],
-	"bancada": [Vector2(26, 21), Vector2(23, 8)],
-	"mesa_cantina": [Vector2(64, 18), Vector2(58, 7)],
-	"sofa": [Vector2(26, 20), Vector2(23, 8)],
-	"cafeteira": [Vector2(22, 26), Vector2(20, 8.0)],
-	"vending": [Vector2(24, 40), Vector2(22, 10.0)],
-	"copiadora": [Vector2(31, 28), Vector2(28, 10.0)],
-	"pilha_papel": [Vector2(15, 16), Vector2(14, 6.0)],
-	"balcao": [Vector2(64, 22), Vector2(58, 9)],
-	"catraca": [Vector2(12, 20), Vector2(10.0, 6.0)],
-	"vaso": [Vector2(14, 26), Vector2(10.0, 6.0)],
-	"bebedouro": [Vector2(12, 22), Vector2(12.0, 6.0)],
-	"armarios": [Vector2(48, 40), Vector2(43, 8.0)],
-	"pc": [Vector2(26, 26), Vector2(23, 8.0)],
-	"cabine": [Vector2(28, 42), Vector2(25, 8.0)],
-	"pia": [Vector2(20, 22), Vector2(18, 8.0)],
-	"pilar": [Vector2(20, 52), Vector2(20.0, 12.0)],
-	"lixeira": [Vector2(11, 16), Vector2(10.0, 6.0)],
-	"poltronas": [Vector2(58, 19), Vector2(52, 8.0)],
-	"pulpito": [Vector2(26, 30), Vector2(23, 10.0)],
-	"arvore": [Vector2(48, 64), Vector2(16.0, 8.0)],
-	"poste": [Vector2(16, 64), Vector2(8.0, 6.0)],
-	"banco": [Vector2(24, 18), Vector2(22, 7)],
-	"mesa_piquenique": [Vector2(55, 28), Vector2(50, 11)],
+	"carteira": [Vector2(36, 36), Vector2(32, 12)],
+	"mesa_prof": [Vector2(72, 43), Vector2(65, 14)],
+	"estante": [Vector2(64, 79), Vector2(58, 22)],
+	"bancada": [Vector2(87, 50), Vector2(78, 16)],
+	"mesa_cantina": [Vector2(120, 44), Vector2(108, 14)],
+	"sofa": [Vector2(76, 39), Vector2(68, 12)],
+	"cafeteira": [Vector2(44, 52), Vector2(40, 17)],
+	"vending": [Vector2(44, 76), Vector2(40, 22)],
+	"copiadora": [Vector2(56, 56), Vector2(50, 18)],
+	"pilha_papel": [Vector2(15, 16), Vector2(14, 6)],
+	"balcao": [Vector2(127, 51), Vector2(114, 16)],
+	"catraca": [Vector2(24, 40), Vector2(14, 8)],
+	"vaso": [Vector2(28, 52), Vector2(14, 8)],
+	"bebedouro": [Vector2(24, 44), Vector2(16, 8)],
+	"armarios": [Vector2(79, 79), Vector2(71, 22)],
+	"pc": [Vector2(48, 48), Vector2(43, 15)],
+	"cabine": [Vector2(48, 78), Vector2(43, 22)],
+	"pia": [Vector2(39, 44), Vector2(35, 14)],
+	"pilar": [Vector2(40, 104), Vector2(32, 14)],
+	"lixeira": [Vector2(22, 31), Vector2(16, 8)],
+	"poltronas": [Vector2(111, 39), Vector2(100, 12)],
+	"pulpito": [Vector2(44, 60), Vector2(40, 19)],
+	"arvore": [Vector2(96, 127), Vector2(20, 10)],
+	"poste": [Vector2(32, 127), Vector2(10, 6)],
+	"banco": [Vector2(64, 36), Vector2(58, 12)],
+	"mesa_piquenique": [Vector2(96, 52), Vector2(86, 17)],
 }
 
 var kind := "carteira"
@@ -89,13 +89,13 @@ static func footprint(k: String, base: Vector2) -> Rect2:
 
 func _add_glows() -> void:
 	match kind:
-		"vending": Fx.glow(self, Vector2(0, -24), 34.0, Color("ff9a6a"), 0.9)
-		"pc": Fx.glow(self, Vector2(0, -20), 18.0, CYAN, 0.6)
-		"cafeteira": Fx.glow(self, Vector2(2, -22), 14.0, Color("ff7a5a"), 0.5)
-		"copiadora": Fx.glow(self, Vector2(8, -18), 10.0, Color("6aff9a"), 0.5)
-		"poste": Fx.glow(self, Vector2(0, -58), 50.0, Color("ffb060"), 0.35)
-		"bancada": Fx.glow(self, Vector2(0, -26), 22.0, Color("9a6aff"), 0.45)
-		"balcao": Fx.glow(self, Vector2(22, -30), 14.0, CYAN, 0.5)
+		"vending": Fx.glow(self, Vector2(0, -50), 44.0, Color("ff9a6a"), 0.8)
+		"pc": Fx.glow(self, Vector2(0, -34), 22.0, CYAN, 0.55)
+		"cafeteira": Fx.glow(self, Vector2(2, -38), 16.0, Color("ff7a5a"), 0.45)
+		"copiadora": Fx.glow(self, Vector2(10, -40), 12.0, Color("6aff9a"), 0.45)
+		"poste": Fx.glow(self, Vector2(0, -116), 60.0, Color("ffb060"), 0.4)
+		"bancada": Fx.glow(self, Vector2(0, -40), 30.0, Color("9a6aff"), 0.45)
+		"balcao": Fx.glow(self, Vector2(-30, -42), 18.0, CYAN, 0.5)
 
 func _process(delta: float) -> void:
 	_t += delta

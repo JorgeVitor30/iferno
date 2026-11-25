@@ -2,11 +2,11 @@
 
 1. Às vezes a imagem vem com mais de um objeto: fica só com o maior pedaço
    (componente conectado) e o que encosta nele.
-2. Reduz pela metade com o filtro de pixel art (cor mais frequente de cada bloco
-   2x2; o contorno escuro ganha nas bordas), pra ter a mesma densidade de pixel
-   do protagonista. O ônibus fica em 1x (é grande).
+2. Usa em 1x (o Pixel Engine já desenha no tamanho final, na mesma densidade do
+   protagonista). Só a pilha de papel é reduzida pela metade (filtro de pixel art).
+   A versão "reta, de frente" (raw2/) tem prioridade sobre a diagonal (raw/).
 
-Entrada: assets/props/clean/raw/<nome>.png
+Entrada: assets/props/clean/raw2/<nome>.png ou assets/props/clean/raw/<nome>.png
 Saída:   assets/props/clean/<nome>.png  (+ imprime o tamanho final de cada um)
 
 Uso: python3 tools/build_clean_props.py
@@ -18,8 +18,9 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "assets/props/clean/raw"
+RAW2 = ROOT / "assets/props/clean/raw2"
 OUT = ROOT / "assets/props/clean"
-KEEP_1X = {"onibus"}
+HALF = {"pilha_papel"}
 
 
 def lum(p: tuple) -> float:
@@ -84,11 +85,15 @@ def half(im: Image.Image) -> Image.Image:
 
 
 def main() -> None:
-    for f in sorted(RAW.glob("*.png")):
+    names = sorted({f.stem for f in RAW.glob("*.png")} | {f.stem for f in RAW2.glob("*.png")})
+    for name in names:
+        f = RAW2 / f"{name}.png"
+        if not f.exists():
+            f = RAW / f"{name}.png"
         im = Image.open(f).convert("RGBA")
         im = main_object(im)
         im = im.crop(im.getbbox())
-        if f.stem not in KEEP_1X:
+        if f.stem in HALF:
             im = half(im)
             im = im.crop(im.getbbox())
         im.save(OUT / f.name)

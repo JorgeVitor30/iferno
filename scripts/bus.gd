@@ -6,10 +6,10 @@ extends Node2D
 signal boarded(player: Node2D)
 
 const TEX := preload("res://assets/props/clean/onibus.png") # sprite 3D (SpriteCook)
-const SIZE := Vector2(127, 64)
+const SIZE := Vector2(212, 73)
 
-@export var door_x := 38.0          # centro da porta, relativo ao meio do ônibus
-@export var exhaust := Vector2(-62, -10) # saída do escapamento, relativa à origem
+@export var door_x := 70.0          # centro da porta, relativo ao meio do ônibus
+@export var exhaust := Vector2(-104, -14) # saída do escapamento, relativa à origem
 @export var idle_shake_interval := 0.07 # o motor "pula" 1px nesse ritmo
 
 var _sprite := Node2D.new() # o desenho do ônibus (treme com o motor)
@@ -22,8 +22,8 @@ func _ready() -> void:
 	var size := SIZE
 	_sprite.draw.connect(_draw_bus)
 	add_child(_sprite)
-	Fx.glow(_sprite, Vector2(60, -14), 26.0, Color("fce6bd"), 0.6) # farol
-	Fx.glow(_sprite, Vector2(0, -36), 56.0, Color("ffb060"), 0.25)  # luz de dentro
+	Fx.glow(_sprite, Vector2(104, -18), 30.0, Color("fce6bd"), 0.6) # farol
+	Fx.glow(_sprite, Vector2(0, -40), 80.0, Color("ffb060"), 0.22)  # luz de dentro
 	_add_body(size)
 	_add_door()
 	_setup_smoke()
@@ -85,12 +85,10 @@ func _make_puff_texture() -> Texture2D:
 				img.set_pixel(x, y, Color.WHITE)
 	return ImageTexture.create_from_image(img)
 
-## Ônibus (sprite 3D), espelhado pra frente ficar virada pra direita. Origem = meio da base.
+## Ônibus (sprite do SpriteCook, de lado, frente pra direita). Origem = meio da base.
 func _draw_bus() -> void:
-	_sprite.draw_rect(Rect2(-SIZE.x / 2.0 + 6, -3, SIZE.x - 8, 5), Color(0, 0, 0, 0.35)) # sombra
-	_sprite.draw_set_transform(Vector2.ZERO, 0.0, Vector2(-1, 1))
+	_sprite.draw_rect(Rect2(-SIZE.x / 2.0 + 8, -4, SIZE.x - 10, 7), Color(0, 0, 0, 0.35)) # sombra
 	_sprite.draw_texture(TEX, Vector2(-floorf(SIZE.x / 2.0), -SIZE.y + 2))
-	_sprite.draw_set_transform(Vector2.ZERO)
 
 func _process(delta: float) -> void:
 	# Motor ligado: o corpo do ônibus pula 1px pra cima e pra baixo.
