@@ -225,5 +225,140 @@
     "asset_id": "d85fb458-bc87-4398-800d-1953ba2ac865",
     "file": "assets/sprites/enemies/raw/prof_estatistica.png",
     "label": "inimigo prof_estatistica (estilo clean, de frente)"
+  },
+  {
+    "asset_id": "4b865aa1-0cf0-4301-a044-78887a22219d",
+    "file": "assets/props/clean/raw/vending.png",
+    "label": "vending (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "0c838c42-33d9-40d3-b9a9-7dc4e8e126fe",
+    "file": "assets/props/clean/raw/carteira.png",
+    "label": "carteira (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "fa45c734-1d87-42b9-8404-e0fd7e4d7969",
+    "file": "assets/props/clean/raw/mesa_prof.png",
+    "label": "mesa_prof (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "4baadb35-ba7b-4861-858c-836de608747c",
+    "file": "assets/props/clean/raw/estante.png",
+    "label": "estante (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "9904f084-0417-4574-bc8f-84777533c2ea",
+    "file": "assets/props/clean/raw/bancada.png",
+    "label": "bancada (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "25fac02b-4b98-4c5a-b38a-af0265639c14",
+    "file": "assets/props/clean/raw/mesa_cantina.png",
+    "label": "mesa_cantina (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "db974686-7f7a-4ec0-b81c-17b70d4209ff",
+    "file": "assets/props/clean/raw/sofa.png",
+    "label": "sofa (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "92b91cb7-94f9-4934-b817-814eafa4ea37",
+    "file": "assets/props/clean/raw/cafeteira.png",
+    "label": "cafeteira (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "f5910f2b-2ddb-4b68-be95-566c9e8af98d",
+    "file": "assets/props/clean/raw/copiadora.png",
+    "label": "copiadora (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "af6c8c8c-f021-4165-b1a5-9efbc0d99ba0",
+    "file": "assets/props/clean/raw/pilha_papel.png",
+    "label": "pilha_papel (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "a0e007af-6709-4d35-90e5-4121c3b39df1",
+    "file": "assets/props/clean/raw/balcao.png",
+    "label": "balcao (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "8dd66531-3d1d-44d4-8abc-d8036172fdf8",
+    "file": "assets/props/clean/raw/catraca.png",
+    "label": "catraca (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "8179f057-f12f-4f44-a562-6e6dcbbb6c56",
+    "file": "assets/props/clean/raw/vaso.png",
+    "label": "vaso (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "38face5f-2250-49d7-908a-cd6f118111dc",
+    "file": "assets/props/clean/raw/bebedouro.png",
+    "label": "bebedouro (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "192a4f77-e254-4c38-b079-58fa23e9617f",
+    "file": "assets/props/clean/raw/armarios.png",
+    "label": "armarios (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "59255aab-d269-4425-8d5b-0318207e3269",
+    "file": "assets/props/clean/raw/pc.png",
+    "label": "pc (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "88977d6a-9baf-4b37-b36d-2e62a9dbf8aa",
+    "file": "assets/props/clean/raw/cabine.png",
+    "label": "cabine (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "25fd518e-ab30-451f-a320-f9df901a5187",
+    "file": "assets/props/clean/raw/pia.png",
+    "label": "pia (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "6450d606-8a76-4515-b83a-1ac695d1c49e",
+    "file": "assets/props/clean/raw/pilar.png",
+    "label": "pilar (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "f138d736-0ff1-4ca7-878d-6d5feaf5fef8",
+    "file": "assets/props/clean/raw/lixeira.png",
+    "label": "lixeira (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "28eb2ea1-f1f7-4e92-bb24-a4355c08080a",
+    "file": "assets/props/clean/raw/poltronas.png",
+    "label": "poltronas (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "1d1af7c8-99cd-43b9-83b6-cf467e24ef55",
+    "file": "assets/props/clean/raw/pulpito.png",
+    "label": "pulpito (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "d43994a6-9c6c-4be2-84fb-25bfff1d36ea",
+    "file": "assets/props/clean/raw/arvore.png",
+    "label": "arvore (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "2cbde736-5315-48c5-94cd-b1d71ce01589",
+    "file": "assets/props/clean/raw/poste.png",
+    "label": "poste (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "7b107a6e-9d36-4898-892a-0f84092e0779",
+    "file": "assets/props/clean/raw/banco.png",
+    "label": "banco (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "e437509b-8829-41cd-8ec3-d0f07c547e18",
+    "file": "assets/props/clean/raw/mesa_piquenique.png",
+    "label": "mesa_piquenique (pixel art com cara de 3D, pixel-engine-image-v1)"
+  },
+  {
+    "asset_id": "884fe1f2-fd23-4484-ad72-956d88a314d2",
+    "file": "assets/props/clean/raw/onibus.png",
+    "label": "onibus (pixel art com cara de 3D, pixel-engine-image-v1)"
   }
 ]

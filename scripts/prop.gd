@@ -29,37 +29,39 @@ const CLOTH := Color("7a3a52")
 const CLOTH_L := Color("964a66")
 
 ## tamanho na tela (largura, altura) e faixa sólida (largura, altura) de cada tipo
+## tamanho na tela (largura, altura) = tamanho do sprite, e faixa sólida (largura, altura)
+## na base. Gerado a partir de assets/props/clean/ (tools/build_clean_props.py).
 const KINDS := {
-	"carteira": [Vector2(18, 16), Vector2(18, 6)],
-	"mesa_prof": [Vector2(46, 22), Vector2(46, 10)],
-	"estante": [Vector2(40, 38), Vector2(40, 10)],
-	"bancada": [Vector2(52, 22), Vector2(52, 10)],
-	"mesa_cantina": [Vector2(64, 18), Vector2(64, 8)],
-	"sofa": [Vector2(44, 20), Vector2(44, 10)],
-	"cafeteira": [Vector2(22, 26), Vector2(20, 8)],
-	"vending": [Vector2(24, 40), Vector2(24, 10)],
-	"copiadora": [Vector2(32, 28), Vector2(32, 10)],
-	"pilha_papel": [Vector2(14, 14), Vector2(14, 6)],
-	"balcao": [Vector2(84, 24), Vector2(84, 10)],
-	"catraca": [Vector2(12, 20), Vector2(10, 6)],
-	"vaso": [Vector2(14, 26), Vector2(10, 6)],
-	"bebedouro": [Vector2(12, 22), Vector2(12, 6)],
-	"armarios": [Vector2(48, 40), Vector2(48, 8)],
-	"pc": [Vector2(26, 26), Vector2(26, 8)],
-	"cabine": [Vector2(28, 42), Vector2(28, 8)],
-	"pia": [Vector2(20, 22), Vector2(20, 8)],
-	"pilar": [Vector2(20, 52), Vector2(20, 12)],
-	"lixeira": [Vector2(12, 16), Vector2(10, 6)],
-	"poltronas": [Vector2(58, 20), Vector2(58, 8)],
-	"pulpito": [Vector2(26, 30), Vector2(24, 10)],
-	# frente da faculdade (área externa)
-	"arvore": [Vector2(48, 64), Vector2(16, 8)],
-	"poste": [Vector2(14, 64), Vector2(8, 6)],
-	"banco": [Vector2(36, 18), Vector2(36, 8)],
-	"mesa_piquenique": [Vector2(56, 28), Vector2(56, 14)],
+	"carteira": [Vector2(18, 16), Vector2(16, 6.0)],
+	"mesa_prof": [Vector2(27, 20), Vector2(24, 8)],
+	"estante": [Vector2(40, 38), Vector2(36, 10.0)],
+	"bancada": [Vector2(26, 21), Vector2(23, 8)],
+	"mesa_cantina": [Vector2(64, 18), Vector2(58, 7)],
+	"sofa": [Vector2(26, 20), Vector2(23, 8)],
+	"cafeteira": [Vector2(22, 26), Vector2(20, 8.0)],
+	"vending": [Vector2(24, 40), Vector2(22, 10.0)],
+	"copiadora": [Vector2(31, 28), Vector2(28, 10.0)],
+	"pilha_papel": [Vector2(15, 16), Vector2(14, 6.0)],
+	"balcao": [Vector2(64, 22), Vector2(58, 9)],
+	"catraca": [Vector2(12, 20), Vector2(10.0, 6.0)],
+	"vaso": [Vector2(14, 26), Vector2(10.0, 6.0)],
+	"bebedouro": [Vector2(12, 22), Vector2(12.0, 6.0)],
+	"armarios": [Vector2(48, 40), Vector2(43, 8.0)],
+	"pc": [Vector2(26, 26), Vector2(23, 8.0)],
+	"cabine": [Vector2(28, 42), Vector2(25, 8.0)],
+	"pia": [Vector2(20, 22), Vector2(18, 8.0)],
+	"pilar": [Vector2(20, 52), Vector2(20.0, 12.0)],
+	"lixeira": [Vector2(11, 16), Vector2(10.0, 6.0)],
+	"poltronas": [Vector2(58, 19), Vector2(52, 8.0)],
+	"pulpito": [Vector2(26, 30), Vector2(23, 10.0)],
+	"arvore": [Vector2(48, 64), Vector2(16.0, 8.0)],
+	"poste": [Vector2(16, 64), Vector2(8.0, 6.0)],
+	"banco": [Vector2(24, 18), Vector2(22, 7)],
+	"mesa_piquenique": [Vector2(55, 28), Vector2(50, 11)],
 }
 
 var kind := "carteira"
+var tex: Texture2D # sprite com cara de 3D (SpriteCook); se não tiver, desenha em código
 var _t := 0.0
 var _seed := 0
 
@@ -74,7 +76,10 @@ func _ready() -> void:
 	col.shape = rect
 	col.position = Vector2(0, -solid.y / 2.0)
 	add_child(col)
-	set_process(kind in ["bancada", "cafeteira", "vending", "copiadora", "pc", "catraca"])
+	var path := "res://assets/props/clean/%s.png" % kind
+	if ResourceLoader.exists(path):
+		tex = load(path)
+	set_process(tex == null and kind in ["bancada", "cafeteira", "vending", "copiadora", "pc", "catraca"])
 	_add_glows()
 
 ## Retângulo que ocupa visualmente (pra não nascer inimigo em cima).
@@ -127,6 +132,14 @@ func _shadow(w: float, h: float = 8.0) -> void:
 	draw_rect(Rect2(x0, -1.5, w, 2), Color(0, 0, 0, 0.35))
 
 func _draw() -> void:
+	if tex:
+		# sprite 3D: sombra projetada no chão + imagem com a base no ponto de origem
+		var sz := tex.get_size()
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2(A, A))
+		_shadow(sz.x / A, sz.y / A)
+		draw_set_transform(Vector2.ZERO)
+		draw_texture(tex, Vector2(-floorf(sz.x / 2.0), -sz.y + 1))
+		return
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(A, A))
 	var s: Vector2 = KINDS[kind][0] / A
 	_shadow(s.x, s.y)
