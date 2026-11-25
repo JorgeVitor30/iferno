@@ -137,6 +137,7 @@ func _shoot() -> void:
 	get_parent().add_child(b)
 
 func _process(delta: float) -> void:
+	queue_redraw()
 	var aim := (get_global_mouse_position() - global_position).normalized()
 	var spr: AnimatedSprite2D = $Sprite2D
 	if is_rolling():
@@ -215,6 +216,6 @@ func _play_keep_phase(spr: AnimatedSprite2D, anim: String) -> void:
 		spr.set_frame_and_progress(frame, progress)
 
 func _draw() -> void:
-	# Sombra no pé
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.45))
-	draw_circle(Vector2.ZERO, 7.0, Color(0, 0, 0, 0.35))
+	# Sombra no pé (some um pouco no pulinho do dodge)
+	var lift := absf($Sprite2D.position.y - SPRITE_Y)
+	Fx.contact_shadow(self, Vector2(0, 2), 12.0 - lift * 0.5, 1.7 - lift * 0.12)

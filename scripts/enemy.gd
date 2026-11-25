@@ -30,7 +30,7 @@ var head_y := 42.0               # altura da cabeça (balão de fala, "!")
 ## Sprite do SpriteCook (de frente). Se tiver, desenha ele em vez do boneco em código,
 ## animado aqui: passo, respiração, achatamento e virar pro lado do jogador.
 var sprite_tex: Texture2D
-var shadow_r := 8.0
+var shadow_r := 9.0
 var elite := false
 var boss := false # chefe do andar: barra de vida no HUD, não é empurrado por tiro
 var display_name := ""
@@ -214,8 +214,7 @@ func spawn_decal(kind: String, color: Color, pos: Vector2 = position) -> void:
 
 func _draw() -> void:
 	# Sombra
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.45))
-	draw_circle(Vector2.ZERO, shadow_r * body_scale, Color(0, 0, 0, 0.3))
+	Fx.contact_shadow(self, Vector2(0, 2), (shadow_r + 3.0) * body_scale, 1.6)
 	if _spawn_t > 0.0:
 		draw_set_transform(Vector2.ZERO)
 		_draw_spawn()

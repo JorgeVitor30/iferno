@@ -151,6 +151,15 @@ static func setup_lighting(scene: Node, player: Node2D, ambient: Color) -> void:
 	l.position = Vector2(0, -12)
 	player.add_child(l)
 
+## Sombra de contato no chão (o que "cola" personagem/objeto no piso).
+## Elipse escura em degraus: borda mais clara, miolo mais escuro.
+static func contact_shadow(ci: CanvasItem, center: Vector2, half_w: float, strength: float = 1.0) -> void:
+	ci.draw_set_transform(center, 0.0, Vector2(1.0, 0.38))
+	ci.draw_circle(Vector2.ZERO, half_w, Color(0, 0, 0, 0.28 * strength))
+	ci.draw_circle(Vector2.ZERO, half_w * 0.72, Color(0, 0, 0, 0.3 * strength))
+	ci.draw_circle(Vector2.ZERO, half_w * 0.42, Color(0, 0, 0, 0.25 * strength))
+	ci.draw_set_transform(Vector2.ZERO)
+
 ## Chão/parede repetindo uma textura de pixel grosso (desenhada em escala ART).
 static func tiled(parent: Node, tex: Texture2D, r: Rect2, tint: Color = Color.WHITE) -> Sprite2D:
 	var s := Sprite2D.new()

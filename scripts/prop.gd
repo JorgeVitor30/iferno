@@ -135,9 +135,11 @@ func _draw() -> void:
 	if tex:
 		# sprite 3D: sombra projetada no chão + imagem com a base no ponto de origem
 		var sz := tex.get_size()
-		draw_set_transform(Vector2.ZERO, 0.0, Vector2(A, A))
-		_shadow(sz.x / A, sz.y / A)
-		draw_set_transform(Vector2.ZERO)
+		# sombra de contato colada na base (+ um pouco pra direita/baixo, luz vem de cima/esquerda)
+		var solid: Vector2 = KINDS[kind][1]
+		var base_w := maxf(solid.x, sz.x * 0.6)
+		draw_rect(Rect2(-base_w / 2.0 + 2, -solid.y * 0.6, base_w, solid.y * 0.6 + 3), Color(0, 0, 0, 0.22))
+		Fx.contact_shadow(self, Vector2(2, 1), base_w * 0.58, 1.1)
 		draw_texture(tex, Vector2(-floorf(sz.x / 2.0), -sz.y + 1))
 		return
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(A, A))
