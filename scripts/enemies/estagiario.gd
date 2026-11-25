@@ -10,6 +10,7 @@ var _wander_t := 0.0
 var _throw_anim := 0.0
 
 func _setup() -> void:
+	sprite_tex = preload("res://assets/sprites/enemies/estagiario.png")
 	display_name = "Estagiário"
 	max_hp = 4 + floor_level
 	speed = 56.0 + floor_level * 3.0

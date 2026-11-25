@@ -195,5 +195,35 @@
     "asset_id": "a8881b62-35c5-46fc-8696-1877e7af95ae",
     "file": "assets/sprites/student2/raw/walk_e.png",
     "label": "estudante novo andar lado direito"
+  },
+  {
+    "asset_id": "4e3a2ea4-2915-4d2d-9750-ea328b5940f0",
+    "file": "assets/sprites/enemies/raw/zelador.png",
+    "label": "inimigo zelador (estilo clean, de frente)"
+  },
+  {
+    "asset_id": "171ca42a-fbc5-4e27-98e8-571b2dd643c4",
+    "file": "assets/sprites/enemies/raw/veterano.png",
+    "label": "inimigo veterano (estilo clean, de frente)"
+  },
+  {
+    "asset_id": "97373ada-b92f-4244-9f8a-2c6118b20df1",
+    "file": "assets/sprites/enemies/raw/professor.png",
+    "label": "inimigo professor (estilo clean, de frente)"
+  },
+  {
+    "asset_id": "b8ebdf78-d904-4f3d-9aa0-0d91b39afcdf",
+    "file": "assets/sprites/enemies/raw/estagiario.png",
+    "label": "inimigo estagiario (estilo clean, de frente)"
+  },
+  {
+    "asset_id": "fc5e505b-d526-44fd-9cb5-a7ea6750ce68",
+    "file": "assets/sprites/enemies/raw/coordenadora.png",
+    "label": "inimigo coordenadora (estilo clean, de frente)"
+  },
+  {
+    "asset_id": "d85fb458-bc87-4398-800d-1953ba2ac865",
+    "file": "assets/sprites/enemies/raw/prof_estatistica.png",
+    "label": "inimigo prof_estatistica (estilo clean, de frente)"
   }
 ]

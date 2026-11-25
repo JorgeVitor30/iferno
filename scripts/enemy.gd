@@ -24,9 +24,12 @@ var drop_chance := 0.1
 var body_scale := 1.0
 # Tamanho "em pixels de verdade" (sem escala): bonecos grandes desenhados no tamanho nativo
 # mudam isso no _setup() em vez de usar body_scale (que borra o pixel).
-var hurt_size := Vector2(16, 30) # hurtbox (onde o tiro acerta)
+var hurt_size := Vector2(18, 38) # hurtbox (onde o tiro acerta)
 var col_radius := 5.0            # círculo do pé (bate em parede)
-var head_y := 34.0               # altura da cabeça (balão de fala, "!")
+var head_y := 42.0               # altura da cabeça (balão de fala, "!")
+## Sprite do SpriteCook (de frente). Se tiver, desenha ele em vez do boneco em código,
+## animado aqui: passo, respiração, achatamento e virar pro lado do jogador.
+var sprite_tex: Texture2D
 var shadow_r := 8.0
 var elite := false
 var boss := false # chefe do andar: barra de vida no HUD, não é empurrado por tiro
@@ -218,15 +221,34 @@ func _draw() -> void:
 		_draw_spawn()
 		return
 	# Estilo clean: o corpo é desenhado em unidades de arte (1 unidade = 2px, Fx.ART).
-	var s := _squash * body_scale * Fx.ART
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2(s.x * facing, s.y))
-	_draw_body()
+	if sprite_tex:
+		_draw_sprite()
+	else:
+		var s := _squash * body_scale * Fx.ART
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2(s.x * facing, s.y))
+		_draw_body()
 	draw_set_transform(Vector2.ZERO)
 	_draw_overlay()
 	if alert and int(anim_t * 12.0) % 3 != 0:
 		Fx.text(self, Vector2(-3, -(head_y + 2.0) * body_scale - 4), "!", Color("ff5a4a"), 14)
 	if elite:
 		_draw_elite_bar()
+
+## Sprite com animação procedural (sem girar: pixel art girado borra).
+func _draw_sprite() -> void:
+	var bob := 0.0
+	if is_moving():
+		bob = -1.0 if int(anim_t * 8.0) % 2 == 0 else 0.0
+	elif fmod(anim_t, 1.4) < 0.7:
+		bob = -1.0
+	var s := _squash * body_scale
+	draw_set_transform(Vector2(0, bob), 0.0, Vector2(s.x * facing, s.y))
+	var sz := sprite_tex.get_size()
+	draw_texture(sprite_tex, Vector2(-floorf(sz.x / 2.0), -sz.y), _sprite_tint())
+
+## Cor aplicada no sprite (ex.: chefe vermelho de raiva).
+func _sprite_tint() -> Color:
+	return Color.WHITE
 
 ## Desenho que não espelha com o boneco (mira, linhas de aviso...).
 func _draw_overlay() -> void:

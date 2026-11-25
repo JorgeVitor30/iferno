@@ -79,16 +79,17 @@ var _steam_t := 0.0
 var _spawned_minions: Array[Enemy] = []
 
 func _setup() -> void:
+	sprite_tex = preload("res://assets/sprites/enemies/prof_estatistica.png")
 	display_name = "PROF. DE ESTATÍSTICA"
 	boss = true
 	max_hp = 520 + (floor_level - 1) * 160
 	speed = 34.0
 	hit_color = SHIRT
 	drop_chance = 1.0
-	hurt_size = Vector2(36, 104)
-	col_radius = 13.0
-	head_y = 110.0
-	shadow_r = 20.0
+	hurt_size = Vector2(38, 80)
+	col_radius = 12.0
+	head_y = 86.0
+	shadow_r = 18.0
 	lines = ["A média da turma é 3,2.", "Isso é trivial!", "Arredonda pra baixo!",
 		"Sua chance de passar: 3%.", "Correlação não é causalidade!", "Vai cair na prova, hein!",
 		"Desvio padrão de vocês: enorme!", "Quem colou vai ver!"]
@@ -407,7 +408,25 @@ func _on_death() -> void:
 
 # ---------------------------------------------------------------- desenho
 
+func _sprite_tint() -> Color:
+	return Color(1.0, 0.72, 0.68) if _phase == 3 else Color.WHITE # vermelho de raiva
+
 func _draw_overlay() -> void:
+	# giz/calculadora na mão levantada enquanto prepara o golpe
+	if _pose == "raise":
+		var hp := Vector2(18 * facing, -62)
+		if _held == "calc":
+			draw_rect(Rect2(hp + Vector2(-5, -14), Vector2(10, 14)), Fx.OUTLINE)
+			draw_rect(Rect2(hp + Vector2(-4, -13), Vector2(8, 12)), Color("4a4a58"))
+			draw_rect(Rect2(hp + Vector2(-3, -12), Vector2(6, 3)), Color("a8d8a0"))
+		else:
+			draw_rect(Rect2(hp + Vector2(-2, -10), Vector2(4, 10)), Fx.OUTLINE)
+			draw_rect(Rect2(hp + Vector2(-1, -9), Vector2(2, 8)), Color("e0d8d0"))
+			if int(anim_t * 10.0) % 2 == 0:
+				draw_rect(Rect2(hp + Vector2(-4, -14), Vector2(8, 1)), CHALK)
+				draw_rect(Rect2(hp + Vector2(0, -18), Vector2(1, 8)), CHALK)
+	elif _pose == "glasses":
+		draw_rect(Rect2(Vector2(-6, -70), Vector2(8, 4)), Color("e0d8d0")) # limpando os óculos
 	# Aviso da regressão linear: reta tracejada piscando
 	if _line_t > 0.0:
 		var a := 0.35 + 0.5 * float(int(_line_t * 16.0) % 2)
@@ -419,10 +438,10 @@ func _draw_overlay() -> void:
 		# fumacinha de raiva saindo da cabeça
 		_steam_t += get_process_delta_time()
 		for i in 3:
-			var y := -112.0 - fmod(_steam_t * 30.0 + i * 8.0, 24.0)
+			var y := -12.0 - fmod(_steam_t * 30.0 + i * 8.0, 24.0)
 			var x := -12.0 + i * 12.0 + sin(_steam_t * 4.0 + i) * 2.0
-			var al := 1.0 - (-112.0 - y) / 24.0
-			draw_rect(Rect2(x, y, 4, 4), Color(1, 1, 1, 0.6 * al))
+			var al := 1.0 - (-12.0 - y) / 24.0
+			draw_rect(Rect2(x, y - 76, 4, 4), Color(1, 1, 1, 0.6 * al))
 
 func _draw_body() -> void:
 	# Desenhado em unidades de arte (2px cada), de frente, ~51 unidades de altura.

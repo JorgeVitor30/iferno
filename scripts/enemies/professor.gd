@@ -10,6 +10,7 @@ var _strafe := 1.0
 var _strafe_t := 0.0
 
 func _setup() -> void:
+	sprite_tex = preload("res://assets/sprites/enemies/professor.png")
 	display_name = "Professor"
 	max_hp = 7 + floor_level
 	speed = 32.0 + floor_level * 2.0

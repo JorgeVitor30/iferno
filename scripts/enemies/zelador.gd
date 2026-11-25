@@ -14,6 +14,7 @@ var _dir := Vector2.RIGHT
 var _puddle_cd := 1.5
 
 func _setup() -> void:
+	sprite_tex = preload("res://assets/sprites/enemies/zelador.png")
 	display_name = "Zelador"
 	max_hp = 7 + floor_level
 	speed = 44.0 + floor_level * 3.0
@@ -39,7 +40,9 @@ func _think(delta: float) -> Vector2:
 				_squash = Vector2(0.85, 1.15)
 			return to.normalized() * speed
 		State.WINDUP:
+			alert = true
 			if _t <= 0.0:
+				alert = false
 				_state = State.SWING
 				_t = 0.2
 				_swing()
@@ -66,6 +69,12 @@ func _swing() -> void:
 func _on_death() -> void:
 	spawn_decal("agua", WATER)
 	spawn_decal("placa", Color.WHITE, position + Vector2(10, 4))
+
+func _draw_overlay() -> void:
+	if _state == State.SWING:
+		var a := _dir.angle()
+		draw_arc(Vector2(0, -14), 22.0, a - 1.2, a + 1.2, 10, Color(1, 1, 1, 0.75), 3.0)
+		draw_arc(Vector2(0, -14), 18.0, a - 1.0, a + 1.0, 8, Color(WATER, 0.8), 2.0)
 
 func _draw_body() -> void:
 	# uniforme azul, boné com aba, bigode e esfregão (o ângulo muda com o golpe)

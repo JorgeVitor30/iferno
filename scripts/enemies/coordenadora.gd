@@ -15,9 +15,10 @@ var _burst_ang := 0.0
 var _windup := 0.0
 
 func _setup() -> void:
+	sprite_tex = preload("res://assets/sprites/enemies/coordenadora.png")
 	display_name = "COORDENADORA"
 	elite = true
-	body_scale = 1.5 # 1,5 x 2 = 3px por unidade de arte (inteiro, não borra)
+	head_y = 46.0
 	max_hp = 28 + floor_level * 8
 	speed = 24.0
 	hit_color = BLAZER

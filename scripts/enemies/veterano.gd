@@ -16,6 +16,7 @@ var _paint := Color.WHITE
 var _hit_this_dash := false
 
 func _setup() -> void:
+	sprite_tex = preload("res://assets/sprites/enemies/veterano.png")
 	display_name = "Veterano"
 	max_hp = 5 + floor_level
 	speed = 60.0 + floor_level * 4.0
