@@ -16,6 +16,7 @@ const SKIN := Color("f0b48a")
 const SKIN_SHADE := Color("c98f68")
 const PAPER := Color("e0d8d0")
 const SPAWN_TIME := 0.8
+const SPEED_MULTIPLIER := 1.3
 
 var max_hp := 5
 var speed := 40.0
@@ -113,7 +114,7 @@ func _physics_process(delta: float) -> void:
 		want = _think(delta)
 		facing = -1.0 if player.global_position.x < global_position.x else 1.0
 	_knock = _knock.move_toward(Vector2.ZERO, 700.0 * delta)
-	velocity = want + _knock
+	velocity = want * SPEED_MULTIPLIER + _knock
 	move_and_slide()
 	_squash = _squash.lerp(Vector2.ONE, minf(delta * 12.0, 1.0))
 	if contact_damage and _player_ok() and to_player().length() < (col_radius + 7.0) * body_scale:

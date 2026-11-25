@@ -9,7 +9,7 @@ signal died
 @export var max_hp := 6
 @export var invuln_time := 0.8 # invencibilidade depois de tomar hit
 
-@export var speed := 90.0
+@export var speed := 117.0 # velocidade original aumentada em 30%
 @export var accel := 900.0     # quão rápido chega na velocidade máxima
 @export var friction := 1100.0 # quão rápido para ao soltar as teclas
 @export var walk_tilt_deg := 0.0 # (desligado: girar pixel art borra; a gingada virou 1px de sobe-e-desce)
@@ -123,6 +123,7 @@ func _physics_process(delta: float) -> void:
 		if Input.is_action_just_pressed("dodge") and input != Vector2.ZERO and _roll_cd <= 0.0:
 			_roll_timer = roll_time
 			_roll_dir = input.normalized()
+			_play_action_sound(180.0, 90.0, 0.14, 0.12)
 			_start_roll_anim()
 		elif Input.is_action_pressed("shoot") and _fire_cd <= 0.0:
 			_shoot()
@@ -130,11 +131,37 @@ func _physics_process(delta: float) -> void:
 
 func _shoot() -> void:
 	_fire_cd = fire_rate
+	_play_action_sound(760.0, 220.0, 0.07, 0.16)
 	var dir := (get_global_mouse_position() - global_position).normalized()
 	var b := BULLET.instantiate()
 	b.global_position = global_position + Vector2(0, -15) + dir * 12.0
 	b.direction = dir
 	get_parent().add_child(b)
+
+## Cria efeitos curtos em PCM para manter o protótipo sem arquivos de áudio externos.
+func _play_action_sound(start_freq: float, end_freq: float, duration: float, volume: float) -> void:
+	var stream := AudioStreamWAV.new()
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
+	stream.mix_rate = 22050
+	stream.stereo = false
+	var sample_count := int(stream.mix_rate * duration)
+	var data := PackedByteArray()
+	data.resize(sample_count * 2)
+	for i in sample_count:
+		var t := float(i) / float(sample_count)
+		var freq := lerpf(start_freq, end_freq, t)
+		var envelope := (1.0 - t) * (1.0 - t)
+		var sample := sin(TAU * freq * float(i) / stream.mix_rate) * envelope * volume
+		var value := int(clampf(sample * 32767.0, -32768.0, 32767.0))
+		data[i * 2] = value & 0xff
+		data[i * 2 + 1] = (value >> 8) & 0xff
+	stream.data = data
+	var audio := AudioStreamPlayer.new()
+	audio.stream = stream
+	audio.volume_db = -2.0
+	audio.finished.connect(audio.queue_free)
+	add_child(audio)
+	audio.play()
 
 func _process(delta: float) -> void:
 	queue_redraw()
