@@ -14,6 +14,7 @@ var _counter := Label.new()
 var _banner := Label.new()
 var _hurt := ColorRect.new()
 var _map: Control
+var _boss_bar: BossBar
 var _banner_tw: Tween
 var _title_tw: Tween
 
@@ -107,6 +108,14 @@ func banner(text: String, color: Color, hold: float = 1.2) -> void:
 	_banner_tw.tween_property(_banner, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_banner_tw.tween_interval(hold)
 	_banner_tw.tween_property(_banner, "modulate:a", 0.0, 0.4)
+
+## Barra de vida do chefe embaixo da tela. Some sozinha quando ele cai.
+func show_boss(enemy: Node) -> void:
+	if _boss_bar == null:
+		_boss_bar = BossBar.new()
+		add_child(_boss_bar)
+		move_child(fade, get_child_count() - 1)
+	_boss_bar.track(enemy)
 
 func hurt_flash() -> void:
 	_hurt.color.a = 0.35
