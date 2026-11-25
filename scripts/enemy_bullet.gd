@@ -198,9 +198,10 @@ func _draw() -> void:
 			draw_set_transform(up - (Vector2(0, 3) if kind == "calculadora" else Vector2.ZERO), spin90, Vector2.ONE)
 			draw_texture(t, -(t.get_size() / 2.0).floor())
 		"aviao":
-			var t2 := _texture("aviao")
-			draw_set_transform(up, snappedf(direction.angle(), PI / 4.0), Vector2.ONE)
-			draw_texture(t2, -(t2.get_size() / 2.0).floor())
+			# volta pro aviãozinho de antes (o usuário preferiu esse)
+			draw_set_transform(up, snappedf(direction.angle(), PI / 4.0), Vector2(Fx.ART, Fx.ART))
+			draw_colored_polygon(PackedVector2Array([Vector2(4, 0), Vector2(-3, -3), Vector2(-2, 0), Vector2(-3, 3)]), OUTLINE)
+			draw_colored_polygon(PackedVector2Array([Vector2(3, 0), Vector2(-2, -2), Vector2(-1, 0), Vector2(-2, 2)]), PAPER)
 		"giz":
 			draw_set_transform(up)
 			draw_circle(Vector2.ZERO, 5.0, Color(1.0, 0.88, 0.5, 0.35))
