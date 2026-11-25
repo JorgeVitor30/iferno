@@ -2,6 +2,7 @@ extends CharacterBody2D
 ## Jogador: WASD anda, mouse mira, botão esquerdo atira, espaço/botão direito = dodge roll.
 
 const BULLET := preload("res://scenes/bullet.tscn")
+const BODY := preload("res://scripts/player_body.gd")
 
 signal health_changed(hp: int, max_hp: int)
 signal died
@@ -39,6 +40,7 @@ const ANIM_FPS := {"idle": 8.0, "walk": 12.0, "roll": 20.0}
 const ANIM_LOOP := {"idle": true, "walk": true, "roll": false}
 
 var _view := "s"
+var _body: Node2D
 
 func _ready() -> void:
 	add_to_group("player")
@@ -49,6 +51,15 @@ func _ready() -> void:
 	health_changed.emit(hp, max_hp)
 	$Sprite2D.sprite_frames = _build_frames()
 	$Sprite2D.play("idle_s")
+	# Estilo clean: o boneco agora é desenhado (player_body.gd). O sprite antigo do
+	# SpriteCook continua no projeto, só fica invisível; o desenho é filho dele pra
+	# herdar o pulinho do dodge e as piscadas de dano.
+	$Sprite2D.self_modulate = Color(1, 1, 1, 0)
+	_body = BODY.new()
+	_body.position = Vector2(0, -SPRITE_Y)
+	$Sprite2D.add_child(_body)
+	$Gun.visible = false
+	$Dust.color = Color(0.55, 0.5, 0.65, 0.8)
 
 ## Monta as animações idle_<vista> e walk_<vista> a partir das folhas em assets/sprites/student/.
 func _build_frames() -> SpriteFrames:
@@ -143,7 +154,7 @@ func _process(delta: float) -> void:
 		_update_blink()
 		return
 	spr.position.y = SPRITE_Y
-	$Gun.visible = true
+	$Gun.visible = false
 	# Olha pro mouse: escolhe a mais próxima das 8 direções.
 	var dir := _dir_index(aim)
 	_view = DIR_TO_VIEW[dir][0]
@@ -159,13 +170,15 @@ func _process(delta: float) -> void:
 		# A gingada agora é só 1px de sobe-e-desce, no ritmo dos passos.
 		var count := spr.sprite_frames.get_frame_count(spr.animation)
 		var ph := (spr.frame + spr.frame_progress) / count * TAU * 2.0
-		spr.position.y = SPRITE_Y - (1.0 if sin(ph) > 0.0 else 0.0)
+		spr.position.y = SPRITE_Y
 		spr.rotation = 0.0
 	else:
 		spr.rotation = 0.0
 		spr.speed_scale = 1.0
 	# Arma atrás do corpo quando mira pra cima.
 	$Gun.z_index = -1 if aim.y < -0.3 else 0
+	_body.view = _view
+	_body.flip = spr.flip_h
 	$Dust.emitting = moving
 	_update_blink()
 	# "Arma" placeholder: linha saindo da altura da mão.

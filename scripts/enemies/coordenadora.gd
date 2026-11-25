@@ -17,7 +17,7 @@ var _windup := 0.0
 func _setup() -> void:
 	display_name = "COORDENADORA"
 	elite = true
-	body_scale = 1.25
+	body_scale = 1.5 # 1,5 x 2 = 3px por unidade de arte (inteiro, não borra)
 	max_hp = 28 + floor_level * 8
 	speed = 24.0
 	hit_color = BLAZER
@@ -80,23 +80,13 @@ func _on_death() -> void:
 	spawn_decal("papel", Color.WHITE, position + Vector2(10, 4))
 
 func _draw_body() -> void:
-	var bob := draw_person(BLAZER, Color("2a2030"), Color("3a2418"))
-	# coque
-	draw_rect(Rect2(-9, -33 + bob, 5, 5), Fx.OUTLINE)
-	draw_rect(Rect2(-8, -32 + bob, 3, 3), Color("3a2418"))
-	# óculos vermelhos
-	draw_rect(Rect2(1, -27 + bob, 5, 3), Color("c0392b"))
-	draw_rect(Rect2(2, -26 + bob, 3, 1), Color("bfe3ff"))
-	# broche dourado e colar
-	draw_rect(Rect2(-3, -18 + bob, 2, 2), Color("ffd23f"))
-	draw_rect(Rect2(-1, -20 + bob, 4, 1), Color("f4efe2"))
-	# prancheta
-	var raise := 6.0 if _windup > 0.0 else 0.0
-	var board := Rect2(5, -18 + bob - raise, 9, 11)
-	draw_rect(board.grow(1.0), Fx.OUTLINE)
-	draw_rect(board, Color("b08850"))
-	draw_rect(Rect2(6, -16 + bob - raise, 7, 8), Color("f4efe2"))
-	draw_rect(Rect2(8, -19 + bob - raise, 3, 2), Color("9a9aa8"))
-	for i in 3:
-		draw_rect(Rect2(7, -15 + i * 2 + bob - raise, 5, 1), Color("9a9aa8"))
-	draw_front_arm(BLAZER, bob, raise)
+	# blazer roxo, coque, óculos vermelhos, broche dourado e prancheta
+	var b := draw_person(BLAZER, Color("221a2c"), Color("3a2418"))
+	bb(-6, -15 + b, 3, 3, Color("3a2418"))     # coque
+	fb(1, -11 + b, 3, 1, Color("c0383a"))      # óculos
+	fb(-2, -6 + b, 1, 1, Color("ffd23f"))      # broche
+	var raise := 3.0 if _windup > 0.0 else 0.0
+	bb(3, -8 + b - raise, 4, 5, Color("9a7048"))
+	fb(3, -7 + b - raise, 4, 3, PAPER)
+	fb(4, -9 + b - raise, 2, 1, Color("8a8498"))
+	draw_front_arm(BLAZER, b, raise)

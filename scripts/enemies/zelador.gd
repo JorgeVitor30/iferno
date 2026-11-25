@@ -68,33 +68,29 @@ func _on_death() -> void:
 	spawn_decal("placa", Color.WHITE, position + Vector2(10, 4))
 
 func _draw_body() -> void:
-	var bob := draw_person(UNIFORM, CAP.darkened(0.2), Color("4a3428"))
-	# boné
-	draw_rect(Rect2(-6, -33 + bob, 11, 4), Fx.OUTLINE)
-	draw_rect(Rect2(-5, -32 + bob, 9, 3), CAP)
-	draw_rect(Rect2(3, -30 + bob, 5, 2), CAP.darkened(0.2)) # aba
-	# bigode
-	draw_rect(Rect2(1, -23 + bob, 4, 1), Color("4a3428"))
-	# bolso com nome
-	draw_rect(Rect2(-3, -17 + bob, 4, 3), Color("e8dcc0"))
-	# esfregão: o ângulo muda com o estado
-	var ang := deg_to_rad(65.0) + sin(anim_t * 8.0) * 0.08
-	var shake := 0.0
+	# uniforme azul, boné com aba, bigode e esfregão (o ângulo muda com o golpe)
+	var b := draw_person(UNIFORM, CAP.darkened(0.25), Color("4a3428"))
+	ob(-4, -15 + b, 8, 2)
+	fb(-4, -15 + b, 8, 2, CAP)
+	fb(-3, -15 + b, 4, 1, CAP.lightened(0.2))
+	fb(3, -13 + b, 3, 1, CAP.darkened(0.2)) # aba
+	fb(1, -9 + b, 3, 1, Color("4a3428"))    # bigode
+	fb(-2, -6 + b, 2, 1, Color("e8dcc0"))   # crachá no bolso
+	var ang := deg_to_rad(65.0)
+	var sh := 0.0
 	if _state == State.WINDUP:
 		ang = deg_to_rad(-135.0)
-		shake = float(int(anim_t * 40.0) % 2)
+		sh = float(int(anim_t * 30.0) % 2)
 	elif _state == State.SWING:
 		ang = deg_to_rad(25.0)
-		draw_arc(Vector2(0, -14), 24.0, deg_to_rad(-120), deg_to_rad(40), 10, Color(1, 1, 1, 0.75), 3.0)
-		draw_arc(Vector2(0, -14), 20.0, deg_to_rad(-90), deg_to_rad(30), 8, Color(WATER, 0.8), 2.0)
-	var hand := Vector2(6 + shake, -13 + bob)
-	var tip := hand + Vector2.from_angle(ang) * 20.0
-	var back := hand - Vector2.from_angle(ang) * 4.0
-	draw_line(back, tip, Fx.OUTLINE, 4.0)
-	draw_line(back, tip, Color("b08850"), 2.0)
-	var head := Rect2(tip - Vector2(4, 3), Vector2(8, 6))
-	draw_rect(head.grow(1.0), Fx.OUTLINE)
-	draw_rect(head, Color("c8c8d0"))
-	draw_rect(Rect2(head.position.x, head.end.y - 2, 8, 2), Color("9a9aa8"))
-	draw_front_arm(UNIFORM, bob, 4.0 if _state == State.WINDUP else 0.0)
+		draw_arc(Vector2(0, -7), 12.0, deg_to_rad(-120), deg_to_rad(40), 8, Color(1, 1, 1, 0.7), 2.0)
+	var hand := Vector2(3 + sh, -5 + b)
+	var tip := hand + Vector2.from_angle(ang) * 10.0
+	draw_line(hand - Vector2.from_angle(ang) * 2.0, tip, Fx.OUTLINE, 2.5)
+	draw_line(hand - Vector2.from_angle(ang) * 2.0, tip, Color("9a7048"), 1.0)
+	var mh := tip.round()
+	ob(mh.x - 2, mh.y - 1, 4, 3)
+	fb(mh.x - 2, mh.y - 1, 4, 3, Color("a8a2b4"))
+	fb(mh.x - 2, mh.y + 1, 4, 1, Color("7a7488"))
+	draw_front_arm(UNIFORM, b, 2.0 if _state == State.WINDUP else 0.0)
 	alert = _state == State.WINDUP

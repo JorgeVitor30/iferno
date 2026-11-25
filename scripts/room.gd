@@ -7,8 +7,8 @@ extends Node2D
 signal entered(room: Room)
 signal cleared_room(room: Room)
 
-const FLOOR_TEX := preload("res://assets/tilesets/floor_tile.png")
-const WALL_TEX := preload("res://assets/tilesets/wall_front.png")
+const FLOOR_TEX := preload("res://assets/tilesets/clean/floor.png")
+const WALL_TEX := preload("res://assets/tilesets/clean/wall.png")
 const PROP := preload("res://scripts/prop.gd")
 const DOOR := preload("res://scripts/door.gd")
 const STAIRS := preload("res://scripts/stairs.gd")
@@ -23,44 +23,44 @@ const ENEMIES := {
 }
 const COST := {"estagiario": 2, "zelador": 2, "veterano": 3, "professor": 3, "coordenadora": 8}
 
-const FACE := 31.0   # altura da face da parede de cima
+const FACE := 32.0   # altura da face da parede de cima (16px de arte x2)
 const CAP := 8.0     # espessura do topo escuro das paredes
 const DOOR_W := 48.0 # largura dos vãos de porta e corredores
-const CAP_COLOR := Color("1c1420")
-const OUTLINE := Color("1a1020")
+const CAP_COLOR := Color("150b1f")
+const OUTLINE := Color("0b0612")
 const MIN_SIZE := Vector2(384, 256)
 const MAX_SIZE := Vector2(640, 384) # cabe na célula do andar com corredor sobrando
 
 ## Tipos de sala: tamanho base (sorteado em volta disso), cor do piso,
 ## inimigos mais comuns e frase ao trancar.
 const KINDS := {
-	"hall": {"size": Vector2(480, 304), "tint": Color(1.0, 0.97, 0.92), "pool": [],
+	"hall": {"size": Vector2(480, 304), "tint": Color(1.0, 0.98, 1.0), "pool": [],
 		"lock": ""},
 	"sala_aula": {"size": Vector2(496, 320), "tint": Color(1.0, 1.0, 1.0),
 		"pool": ["professor", "estagiario", "estagiario", "zelador", "veterano"],
 		"lock": "CHAMADA! NINGUÉM SAI!"},
-	"biblioteca": {"size": Vector2(560, 352), "tint": Color(0.86, 0.72, 0.58),
+	"biblioteca": {"size": Vector2(560, 352), "tint": Color(1.08, 0.94, 0.86),
 		"pool": ["professor", "professor", "estagiario", "zelador"],
 		"lock": "SILÊNCIO NA BIBLIOTECA!"},
-	"laboratorio": {"size": Vector2(496, 320), "tint": Color(0.84, 0.94, 1.0),
+	"laboratorio": {"size": Vector2(496, 320), "tint": Color(0.9, 1.0, 1.08),
 		"pool": ["estagiario", "veterano", "veterano", "professor"],
 		"lock": "EXPERIMENTO FORA DE CONTROLE!"},
-	"cantina": {"size": Vector2(576, 336), "tint": Color(1.0, 0.9, 0.78),
+	"cantina": {"size": Vector2(576, 336), "tint": Color(1.08, 0.97, 0.9),
 		"pool": ["zelador", "zelador", "veterano", "estagiario"],
 		"lock": "BRIGA NA FILA DO PF!"},
-	"sala_prof": {"size": Vector2(432, 288), "tint": Color(0.9, 0.86, 1.0),
+	"sala_prof": {"size": Vector2(432, 288), "tint": Color(1.0, 0.94, 1.06),
 		"pool": ["professor", "professor", "estagiario", "veterano"],
 		"lock": "REUNIÃO DE EMERGÊNCIA!"},
-	"xerox": {"size": Vector2(432, 288), "tint": Color(0.9, 0.9, 0.92),
+	"xerox": {"size": Vector2(432, 288), "tint": Color(0.96, 0.96, 1.0),
 		"pool": ["estagiario", "estagiario", "professor", "zelador"],
 		"lock": "PAPEL PRA TODO LADO!"},
-	"informatica": {"size": Vector2(512, 320), "tint": Color(0.82, 0.86, 0.94),
+	"informatica": {"size": Vector2(512, 320), "tint": Color(0.88, 0.94, 1.1),
 		"pool": ["estagiario", "estagiario", "veterano", "professor"],
 		"lock": "O SISTEMA CAIU!"},
-	"banheiro": {"size": Vector2(416, 272), "tint": Color(0.8, 0.92, 0.95),
+	"banheiro": {"size": Vector2(416, 272), "tint": Color(0.86, 1.02, 1.06),
 		"pool": ["zelador", "zelador", "veterano", "estagiario"],
 		"lock": "INTERDITADO PRA LIMPEZA!"},
-	"auditorio": {"size": Vector2(640, 384), "tint": Color(0.78, 0.72, 0.84),
+	"auditorio": {"size": Vector2(640, 384), "tint": Color(0.92, 0.86, 1.0),
 		"pool": [], "lock": "PROVA FINAL!"},
 }
 const SUBJECTS := ["Cálculo I", "Física II", "Álgebra Linear", "Estatística", "Programação",
@@ -133,7 +133,7 @@ func build() -> void:
 	var r := rect
 	var tint: Color = KINDS[kind]["tint"]
 	# cada sala com o piso um pouquinho diferente
-	tint = tint * Color(randf_range(0.94, 1.04), randf_range(0.94, 1.04), randf_range(0.94, 1.04))
+	tint = tint * Color(randf_range(0.97, 1.03), randf_range(0.97, 1.03), randf_range(0.97, 1.03))
 	_tiled(FLOOR_TEX, r, tint)
 	var cx := r.get_center().x
 	var cy := r.get_center().y
@@ -171,15 +171,7 @@ func build() -> void:
 func _tiled(tex: Texture2D, r: Rect2, tint: Color) -> void:
 	if r.size.x <= 0.0 or r.size.y <= 0.0:
 		return
-	var s := Sprite2D.new()
-	s.texture = tex
-	s.centered = false
-	s.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
-	s.region_enabled = true
-	s.region_rect = Rect2(Vector2.ZERO, r.size)
-	s.position = r.position
-	s.modulate = tint
-	add_child(s)
+	Fx.tiled(self, tex, r, tint)
 
 func _wall(r: Rect2) -> void:
 	if r.size.x <= 0.0 or r.size.y <= 0.0:
@@ -235,7 +227,9 @@ func _build_doors(cx: float, cy: float) -> void:
 func _draw() -> void:
 	# Topo escuro de todas as paredes em volta da sala
 	var r := rect
-	draw_rect(Rect2(r.position.x - CAP, r.position.y - FACE - CAP, r.size.x + CAP * 2, r.size.y + FACE + CAP * 2), CAP_COLOR)
+	var outer := Rect2(r.position.x - CAP, r.position.y - FACE - CAP, r.size.x + CAP * 2, r.size.y + FACE + CAP * 2)
+	draw_rect(outer, CAP_COLOR)
+	draw_rect(outer, Fx.CAP_RIM, false, 2.0) # quina de fora pegando um pouco de luz
 	if kind == "hall":
 		# Porta de vidro da entrada principal (por onde o jogador chegou)
 		var cx := r.get_center().x
@@ -443,15 +437,15 @@ func _draw_floor_decor(n: Node2D) -> void:
 	if _rug and kind in ["biblioteca", "sala_prof", "sala_aula", "xerox"]:
 		var rug := Rect2(c.x - 70, c.y - 46, 140, 92)
 		var hue := fmod(float(grid.x * 37 + grid.y * 91) / 100.0, 1.0)
-		var base := Color.from_hsv(absf(hue), 0.45, 0.4)
+		var base := Color.from_hsv(absf(hue), 0.35, 0.3)
 		n.draw_rect(rug, base)
 		n.draw_rect(rug.grow(-3), base.lightened(0.2))
 		n.draw_rect(rug.grow(-10), base)
 	match kind:
 		"hall":
 			# tapete vermelho da porta até o meio
-			n.draw_rect(Rect2(c.x - 22, c.y - 40, 44, r.end.y - c.y + 40), Color("8a2a2a"))
-			n.draw_rect(Rect2(c.x - 20, c.y - 40, 40, r.end.y - c.y + 40), Color("b83a3a"))
+			n.draw_rect(Rect2(c.x - 22, c.y - 40, 44, r.end.y - c.y + 40), Color("4a1e2a"))
+			n.draw_rect(Rect2(c.x - 20, c.y - 40, 40, r.end.y - c.y + 40), Color("6e2a3a"))
 			n.draw_rect(Rect2(c.x - 30, r.end.y - 14, 60, 12), Color("4a4040")) # capacho
 			Fx.text(n, Vector2(c.x - 30, r.end.y - 5), "BEM-VINDO", Color("c8b8a0"), 7, 60, HORIZONTAL_ALIGNMENT_CENTER)
 		"laboratorio":
@@ -462,20 +456,20 @@ func _draw_floor_decor(n: Node2D) -> void:
 			while y < r.end.y:
 				var x := r.position.x + (16.0 if int((y - r.position.y) / 16.0) % 2 == 1 else 0.0)
 				while x < r.end.x:
-					n.draw_rect(Rect2(x, y, minf(16, r.end.x - x), minf(16, r.end.y - y)), Color(1, 1, 1, 0.12))
+					n.draw_rect(Rect2(x, y, minf(16, r.end.x - x), minf(16, r.end.y - y)), Color(0.6, 0.9, 1.0, 0.05))
 					x += 32
 				y += 16
 		"auditorio":
 			# palco de madeira em cima
 			var stage := Rect2(r.position.x, r.position.y, r.size.x, 96)
-			n.draw_rect(stage, Color("8a5a3a"))
+			n.draw_rect(stage, Color("4e3640"))
 			var y2 := stage.position.y + 8
 			while y2 < stage.end.y:
-				n.draw_rect(Rect2(stage.position.x, y2, stage.size.x, 1), Color("6a4028"))
+				n.draw_rect(Rect2(stage.position.x, y2, stage.size.x, 2), Color("3e2a34"))
 				y2 += 8
-			n.draw_rect(Rect2(stage.position.x, stage.end.y, stage.size.x, 4), Color("4a2a18"))
+			n.draw_rect(Rect2(stage.position.x, stage.end.y, stage.size.x, 4), Color("241820"))
 			# tapete do corredor da plateia
-			n.draw_rect(Rect2(c.x - 20, stage.end.y + 4, 40, r.end.y - stage.end.y - 4), Color("6a2a3a"))
+			n.draw_rect(Rect2(c.x - 20, stage.end.y + 4, 40, r.end.y - stage.end.y - 4), Color("4a2232"))
 
 func _stripes(n: Node2D, y: float) -> void:
 	var x := rect.position.x + 8
@@ -680,7 +674,7 @@ func _spawn_wave(i: int) -> void:
 		e.floor_level = floor_level
 		e.position = _spawn_point(player)
 		if t == "prof_estatistica":
-			e.position = Vector2(rect.get_center().x, rect.position.y + 100) # no palco
+			e.position = Vector2(rect.get_center().x, rect.position.y + 120) # no palco
 			e.set("arena", rect)
 		e.died.connect(_on_enemy_died)
 		entities.add_child(e)

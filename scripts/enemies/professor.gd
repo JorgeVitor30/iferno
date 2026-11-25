@@ -59,20 +59,15 @@ func _on_death() -> void:
 	spawn_decal("papel", Color.WHITE)
 
 func _draw_body() -> void:
-	var bob := draw_person(BLAZER, Color("3a3440"), Color("d8d4cc"))
-	# careca no topo + cabelo branco dos lados
-	draw_rect(Rect2(-3, -31 + bob, 6, 2), SKIN)
-	# óculos
-	draw_rect(Rect2(1, -27 + bob, 4, 3), Fx.OUTLINE)
-	draw_rect(Rect2(2, -26 + bob, 2, 1), Color("bfe3ff"))
-	# camisa e gravata
-	draw_rect(Rect2(-1, -20 + bob, 4, 6), Color("e8e4dc"))
-	draw_rect(Rect2(0, -19 + bob, 2, 6), Color("c0392b"))
-	# pilha de provas na mão
-	var raise := 6.0 if _windup > 0.0 else 0.0
-	var stack := Rect2(5, -16 + bob - raise, 8, 6)
-	draw_rect(stack.grow(1.0), Fx.OUTLINE)
-	draw_rect(stack, Color("f4efe2"))
-	draw_rect(Rect2(6, -14 + bob - raise, 6, 1), Color("9a9aa8"))
-	draw_rect(Rect2(10, -12 + bob - raise, 2, 2), Color("e0382f"))
-	draw_front_arm(BLAZER, bob, raise)
+	# blazer marrom, careca com cabelo branco dos lados, óculos, gravata e pilha de provas
+	var b := draw_person(BLAZER, Color("2e2a36"), Color("c8c4bc"))
+	fb(-2, -14 + b, 4, 1, SKIN)                 # careca
+	fb(-1, -14 + b, 1, 1, Color("fff0e0"))
+	ob(1, -11 + b, 3, 1)
+	fb(1, -11 + b, 3, 1, Color("bfe3ff"))       # óculos
+	fb(-1, -7 + b, 2, 3, Color("e0d8d0"))       # camisa
+	fb(0, -7 + b, 1, 3, Color("c0383a"))        # gravata
+	var raise := 3.0 if _windup > 0.0 else 0.0
+	bb(3, -7 + b - raise, 4, 3, PAPER)
+	fb(5, -6 + b - raise, 1, 1, Color("e0382f"))
+	draw_front_arm(BLAZER, b, raise)

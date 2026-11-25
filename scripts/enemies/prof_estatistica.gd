@@ -407,11 +407,6 @@ func _on_death() -> void:
 
 # ---------------------------------------------------------------- desenho
 
-func _o(r: Rect2, c: Color, dither: bool = true) -> void:
-	draw_rect(r.grow(1.0), Fx.OUTLINE)
-	draw_rect(r, c)
-	Fx.bevel(self, r, c, dither)
-
 func _draw_overlay() -> void:
 	# Aviso da regressão linear: reta tracejada piscando
 	if _line_t > 0.0:
@@ -430,160 +425,128 @@ func _draw_overlay() -> void:
 			draw_rect(Rect2(x, y, 4, 4), Color(1, 1, 1, 0.6 * al))
 
 func _draw_body() -> void:
+	# Desenhado em unidades de arte (2px cada), de frente, ~51 unidades de altura.
 	var walking := is_moving()
 	var step := 0
 	if walking:
-		step = 1 if int(anim_t * 7.0) % 2 == 0 else -1
-	var bob := 0.0
-	if walking:
-		bob = -1.0 if step != 0 and int(anim_t * 14.0) % 2 == 0 else 0.0
-	else:
-		bob = -1.0 if sin(anim_t * 2.4) > 0.3 else 0.0
+		step = 1 if int(anim_t * 6.0) % 2 == 0 else -1
+	var u := 0.0
+	if not walking and fmod(anim_t, 1.4) < 0.7:
+		u = 1.0
 	var angry := _phase == 3
 	var skin := SKIN_B.lerp(Color("ff7a6a"), 0.3) if angry else SKIN_B
 	var skin_sh := SKIN_B_SHADE.lerp(Color("e05a4a"), 0.3) if angry else SKIN_B_SHADE
-	var lift_l := 2.0 if step == 1 else 0.0
-	var lift_r := 2.0 if step == -1 else 0.0
-
+	var ll := 1.0 if step == 1 else 0.0
+	var lr := 1.0 if step == -1 else 0.0
 	# --- pernas e sapatos
-	_o(Rect2(-12, -36 - lift_l, 9, 31), PANTS)
-	_o(Rect2(3, -36 - lift_r, 9, 31), PANTS)
-	draw_rect(Rect2(-5, -34 - lift_l, 2, 26), PANTS.darkened(0.25))
-	draw_rect(Rect2(3, -34 - lift_r, 2, 26), PANTS.darkened(0.25))
-	_o(Rect2(-12, -11 - lift_l, 9, 5), PANTS_LIGHT) # barra dobrada
-	_o(Rect2(3, -11 - lift_r, 9, 5), PANTS_LIGHT)
-	_o(Rect2(-15, -5 - lift_l, 12, 5), SHOE)
-	_o(Rect2(3, -5 - lift_r, 12, 5), SHOE)
-	draw_rect(Rect2(-14, -5 - lift_l, 6, 1), SHOE.lightened(0.25))
-	draw_rect(Rect2(4, -5 - lift_r, 6, 1), SHOE.lightened(0.25))
-
-	var u := bob # tudo daqui pra cima balança junto
-	# --- cintura (calça alta) e camisa
-	_o(Rect2(-15, -43 + u, 30, 8), PANTS)
-	_o(Rect2(-16, -67 + u, 32, 25), SHIRT)
-	# xadrezinho bem leve na camisa
-	for sy in range(-65, -44, 4):
-		draw_rect(Rect2(-15, sy + u, 30, 1), Color(SHIRT_SHADE, 0.45))
-	for sx in range(-14, 15, 4):
-		draw_rect(Rect2(sx, -66 + u, 1, 23), Color(SHIRT_SHADE, 0.35))
-	draw_rect(Rect2(8, -67 + u, 8, 25), SHIRT_SHADE)
-	for by in [-62, -56, -50]:
-		draw_rect(Rect2(-1, by + u, 2, 2), Color("8aa4b0"))
-	# suspensórios
-	draw_rect(Rect2(-10, -67 + u, 4, 30), SUSP)
-	draw_rect(Rect2(6, -67 + u, 4, 30), SUSP)
-	draw_rect(Rect2(-10, -67 + u, 1, 30), SUSP.lightened(0.2))
-	draw_rect(Rect2(6, -67 + u, 1, 30), SUSP.lightened(0.2))
-	draw_rect(Rect2(-10, -39 + u, 4, 3), Color("d8c8a0")) # presilhas
-	draw_rect(Rect2(6, -39 + u, 4, 3), Color("d8c8a0"))
-
-	# --- braço esquerdo (sempre na cintura)
+	bb(-6, -14 - ll, 4, 12, PANTS)
+	bb(2, -14 - lr, 4, 12, PANTS)
+	fb(-6, -5 - ll, 4, 2, PANTS_LIGHT)   # barra dobrada
+	fb(2, -5 - lr, 4, 2, PANTS_LIGHT)
+	bb(-7, -2 - ll, 5, 2, SHOE)
+	bb(2, -2 - lr, 5, 2, SHOE)
+	# --- cintura, camisa xadrezinha e suspensório
+	bb(-7, -17 + u, 14, 3, PANTS)
+	bb(-8, -29 + u, 16, 12, SHIRT)
+	fb(5, -28 + u, 3, 10, SHIRT_SHADE)
+	for i in 3:
+		fb(0, -26 + i * 3 + u, 1, 1, Color("8aa4b0"))
+	fb(-5, -29 + u, 2, 13, SUSP)
+	fb(3, -29 + u, 2, 13, SUSP)
+	fb(-5, -17 + u, 2, 1, Color("d8c8a0"))
+	fb(3, -17 + u, 2, 1, Color("d8c8a0"))
+	# --- braços
 	_arm_hip(-1.0, u, skin)
-	# --- braço direito depende da pose
 	match _pose:
 		"raise":
-			_o(Rect2(16, -73 + u, 7, 10), SHIRT)
-			_o(Rect2(16, -64 + u, 8, 4), CUFF)
-			_o(Rect2(18, -86 + u, 5, 13), skin)
-			_o(Rect2(17, -92 + u, 7, 6), skin)
-			_held_item(Vector2(20, -94 + u))
+			bb(8, -32 + u, 3, 4, SHIRT)
+			bb(9, -38 + u, 2, 6, skin)
+			bb(8, -41 + u, 4, 3, skin)
+			_held_item(Vector2(10, -42 + u))
 		"point":
-			_o(Rect2(16, -66 + u, 10, 7), SHIRT)
-			_o(Rect2(25, -66 + u, 4, 8), CUFF)
-			_o(Rect2(29, -64 + u, 9, 5), skin)
-			_o(Rect2(37, -65 + u, 5, 6), skin)
-			draw_rect(Rect2(41, -64 + u, 3, 2), skin) # dedo apontando
+			bb(8, -29 + u, 5, 3, SHIRT)
+			bb(13, -29 + u, 2, 4, CUFF)
+			bb(15, -28 + u, 4, 2, skin)
+			bb(19, -29 + u, 2, 3, skin)
 		"glasses":
-			_o(Rect2(16, -66 + u, 7, 12), SHIRT)
-			_o(Rect2(16, -55 + u, 8, 4), CUFF)
-			_o(Rect2(13, -78 + u, 5, 23), skin)
-			_o(Rect2(5, -86 + u, 8, 5), Color("f4efe2")) # paninho limpando a lente
+			bb(8, -29 + u, 3, 6, SHIRT)
+			bb(6, -37 + u, 2, 10, skin)
+			bb(2, -40 + u, 4, 2, Color("e0d8d0")) # paninho limpando a lente
 		_:
 			_arm_hip(1.0, u, skin)
-
 	# --- pescoço e gravata borboleta
-	_o(Rect2(-4, -71 + u, 8, 5), skin_sh)
-	_o(Rect2(-9, -72 + u, 8, 7), TIE)
-	_o(Rect2(1, -72 + u, 8, 7), TIE)
-	_o(Rect2(-2, -71 + u, 4, 5), TIE.darkened(0.3))
-	draw_rect(Rect2(-8, -71 + u, 2, 1), TIE.lightened(0.3))
-
+	bb(-2, -31 + u, 4, 2, skin_sh)
+	bb(-5, -32 + u, 4, 3, TIE)
+	bb(1, -32 + u, 4, 3, TIE)
+	bb(-1, -31 + u, 2, 2, TIE.darkened(0.3))
 	# --- cabeça
-	_o(Rect2(-19, -89 + u, 5, 10), skin) # orelhas
-	_o(Rect2(14, -89 + u, 5, 10), skin)
-	draw_rect(Rect2(-18, -86 + u, 2, 5), skin_sh)
-	draw_rect(Rect2(16, -86 + u, 2, 5), skin_sh)
-	_o(Rect2(-15, -99 + u, 30, 28), skin, false)
-	draw_rect(Rect2(-15, -75 + u, 30, 4), skin_sh)
+	bb(-10, -41 + u, 2, 4, skin)
+	bb(8, -41 + u, 2, 4, skin)
+	bb(-8, -46 + u, 16, 14, skin)
+	fb(-8, -34 + u, 16, 2, skin_sh)
 	# cabelo com topete pro lado
-	_o(Rect2(-16, -105 + u, 32, 10), HAIR)
-	_o(Rect2(-6, -110 + u, 21, 7), HAIR)
-	draw_rect(Rect2(-6, -103 + u, 21, 2), HAIR) # junta o topete (cobre o contorno de dentro)
-	draw_rect(Rect2(-2, -108 + u, 11, 2), HAIR_LIGHT)
-	draw_rect(Rect2(-12, -103 + u, 6, 1), HAIR_LIGHT)
-	_o(Rect2(-16, -97 + u, 4, 11), HAIR) # costeletas
-	_o(Rect2(12, -97 + u, 4, 9), HAIR)
-	# sobrancelhas (bravo: inclinadas pra dentro)
+	bb(-9, -49 + u, 18, 5, HAIR)
+	bb(-3, -51 + u, 11, 3, HAIR)
+	fb(-3, -49 + u, 11, 1, HAIR)
+	fb(-1, -50 + u, 6, 1, HAIR_LIGHT)
+	fb(-7, -48 + u, 4, 1, HAIR_LIGHT)
+	bb(-9, -45 + u, 2, 5, HAIR)
+	bb(7, -45 + u, 2, 4, HAIR)
+	# sobrancelhas
 	var brow := Color("4a3028")
 	if angry:
-		draw_rect(Rect2(-12, -94 + u, 3, 2), brow)
-		draw_rect(Rect2(-9, -93 + u, 4, 2), brow)
-		draw_rect(Rect2(5, -93 + u, 4, 2), brow)
-		draw_rect(Rect2(9, -94 + u, 3, 2), brow)
+		fb(-6, -45 + u, 2, 1, brow)
+		fb(-4, -44 + u, 2, 1, brow)
+		fb(2, -44 + u, 2, 1, brow)
+		fb(4, -45 + u, 2, 1, brow)
 	else:
-		draw_rect(Rect2(-12, -94 + u, 7, 2), brow)
-		draw_rect(Rect2(5, -94 + u, 7, 2), brow)
+		fb(-6, -44 + u, 3, 1, brow)
+		fb(3, -44 + u, 3, 1, brow)
 	# óculos redondos enormes
 	var blink := _blink_t < 0.0 and _pose != "glasses"
-	for ex: float in [-7.0, 7.0]:
-		var c := Vector2(ex, -85 + u)
-		draw_circle(c, 7.5, Fx.OUTLINE)
-		draw_circle(c, 6.5, Color("3a3a44"))
-		draw_circle(c, 5.5, Color("fbfbf8") if not blink else skin)
+	for ex: float in [-3.5, 3.5]:
+		var cc := Vector2(ex, -40 + u)
+		draw_circle(cc, 3.9, Fx.OUTLINE)
+		draw_circle(cc, 3.2, Color("3a3a44"))
+		draw_circle(cc, 2.5, Color("f4f2ee") if not blink else skin)
 		if blink:
-			draw_rect(Rect2(c.x - 4, c.y, 8, 1), Fx.OUTLINE)
+			fb(cc.x - 2, cc.y, 4, 1, Fx.OUTLINE)
 		else:
-			var pp := (c + _look * Vector2(facing, 1.0) - Vector2(2, 2)).round()
-			draw_rect(Rect2(pp, Vector2(4, 4)), Color("2a3a4a"))
-			draw_rect(Rect2(pp + Vector2(1, 0), Vector2(1, 1)), Color.WHITE)
-		draw_rect(Rect2(c.x - 4, c.y - 4, 2, 1), Color(1, 1, 1, 0.8)) # brilho da lente
-	draw_rect(Rect2(-1, -86 + u, 2, 2), Color("3a3a44")) # ponte
-	# nariz
-	_o(Rect2(-2, -81 + u, 4, 5), Color("eab48c") if not angry else skin_sh)
-	# bigodão (mexe quando fala)
+			var pp := (cc + (_look * 0.5).round() * Vector2(facing, 1.0) - Vector2(1, 1)).floor()
+			fb(pp.x, pp.y, 2, 2, Color("2a3a4a"))
+	fb(-1, -40 + u, 2, 1, Color("3a3a44"))
+	# nariz, bigodão (mexe quando fala) e boca
+	bb(-1, -38 + u, 2, 2, skin_sh)
 	var m := 0.0
-	if _talk_t > 0.0:
-		m = -1.0 if int(_talk_t * 14.0) % 2 == 0 else 0.0
-	_o(Rect2(-11, -76 + u + m, 22, 5), MUST)
-	_o(Rect2(-15, -78 + u + m, 5, 3), MUST)
-	_o(Rect2(10, -78 + u + m, 5, 3), MUST)
-	draw_rect(Rect2(-16, -80 + u + m, 2, 2), MUST)
-	draw_rect(Rect2(14, -80 + u + m, 2, 2), MUST)
-	draw_rect(Rect2(-9, -76 + u + m, 18, 1), MUST.lightened(0.2))
-	# boca
+	if _talk_t > 0.0 and int(_talk_t * 12.0) % 2 == 0:
+		m = -1.0
+	bb(-5, -36 + u + m, 10, 2, MUST)
+	fb(-7, -37 + u + m, 2, 1, MUST)
+	fb(5, -37 + u + m, 2, 1, MUST)
+	fb(-8, -38 + u + m, 1, 1, MUST)
+	fb(7, -38 + u + m, 1, 1, MUST)
+	fb(-4, -36 + u + m, 8, 1, MUST.lightened(0.2))
 	if angry or _talk_t > 0.0:
-		_o(Rect2(-3, -71 + u, 6, 2 if not angry else 3), Color("7a2a2a"))
-	else:
-		draw_rect(Rect2(-3, -71 + u, 6, 1), Color("9a4a3a"))
+		bb(-1, -33 + u, 2, 1, Color("7a2a2a"))
 
 func _arm_hip(side: float, u: float, skin: Color) -> void:
 	# mão na cintura, igual à referência
-	var x := 16.0 if side > 0.0 else -23.0
-	_o(Rect2(x, -66 + u, 7, 13), SHIRT)
-	_o(Rect2(x + (0.0 if side > 0.0 else -1.0), -54 + u, 8, 4), CUFF)
-	_o(Rect2(x + (1.0 if side > 0.0 else 1.0), -50 + u, 5, 8), skin)
-	_o(Rect2(13.0 if side > 0.0 else -19.0, -44 + u, 6, 6), skin)
+	var x := 8.0 if side > 0.0 else -11.0
+	bb(x, -29 + u, 3, 6, SHIRT)
+	bb(x - (0.0 if side > 0.0 else 1.0), -23 + u, 4, 2, CUFF)
+	bb(x, -21 + u, 3, 2, skin)
+	bb(6.0 if side > 0.0 else -9.0, -19 + u, 3, 3, skin)
 
 func _held_item(p: Vector2) -> void:
 	if _held == "calc":
-		_o(Rect2(p.x - 6, p.y - 16, 12, 16), Color("4a4a58"))
-		draw_rect(Rect2(p.x - 5, p.y - 15, 10, 4), Color("a8d8a0"))
-		for r in 3:
-			for c in 3:
-				draw_rect(Rect2(p.x - 5 + c * 3.5, p.y - 10 + r * 3.0, 2.5, 2.0), Color("d8d8e0"))
+		bb(p.x - 3, p.y - 8, 6, 8, Color("4a4a58"))
+		fb(p.x - 2, p.y - 7, 4, 2, Color("a8d8a0"))
+		fb(p.x - 2, p.y - 4, 1, 1, Color("d8d8e0"))
+		fb(p.x, p.y - 4, 1, 1, Color("d8d8e0"))
+		fb(p.x - 2, p.y - 2, 1, 1, Color("d8d8e0"))
+		fb(p.x, p.y - 2, 1, 1, Color("ff8a4a"))
 	else:
-		# giz brilhando
-		_o(Rect2(p.x - 1, p.y - 9, 3, 9), Color("f4efe2"))
+		bb(p.x - 0.5, p.y - 4, 1, 4, Color("e0d8d0")) # giz
 		if int(anim_t * 10.0) % 2 == 0:
-			draw_rect(Rect2(p.x - 3, p.y - 12, 7, 1), CHALK)
-			draw_rect(Rect2(p.x, p.y - 15, 1, 7), CHALK)
+			fb(p.x - 2, p.y - 6, 4, 1, CHALK)
+			fb(p.x - 0.5, p.y - 8, 1, 4, CHALK)

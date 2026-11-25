@@ -4,8 +4,8 @@ extends Control
 ## e um "rastro" branco que desce devagar mostrando o dano que acabou de levar.
 
 const OUTLINE := Color("1a1020")
-const FRAME := Color("e8dcc0")
-const FRAME_DARK := Color("8a7a68")
+const FRAME := Color("8a7aa0")
+const FRAME_DARK := Color("4a3d5a")
 const FILL := Color("d94a4a")
 const FILL_DARK := Color("a02a3a")
 const TRAIL := Color("fff0d0")

@@ -42,21 +42,16 @@ func _think(delta: float) -> Vector2:
 	return want.normalized() * speed
 
 func _draw_body() -> void:
-	var bob := draw_person(POLO, Color("6a6a78"), Color("8a5a2a"))
-	# cabelo bagunçado
-	draw_rect(Rect2(-6, -33 + bob, 3, 2), Color("8a5a2a"))
-	draw_rect(Rect2(0, -33 + bob, 3, 2), Color("8a5a2a"))
-	# crachá pendurado
-	draw_line(Vector2(-3, -20 + bob), Vector2(0, -15 + bob), Color("3f6fd1"), 1.0)
-	draw_line(Vector2(3, -20 + bob), Vector2(0, -15 + bob), Color("3f6fd1"), 1.0)
-	draw_rect(Rect2(-2, -15 + bob, 4, 4), Color("f4efe2"))
-	draw_rect(Rect2(-1, -14 + bob, 2, 1), Color("3f6fd1"))
-	# olheira
-	draw_rect(Rect2(2, -24 + bob, 2, 1), Color("9a7aa8"))
-	var raise := 7.0 if _throw_anim > 0.0 else 0.0
+	# polo verde, cabelo bagunçado, crachá azul, olheira e aviãozinho de papel
+	var b := draw_person(POLO, Color("4a4658"), Color("8a5a2a"))
+	fb(-4, -15 + b, 1, 1, Color("8a5a2a"))
+	fb(0, -15 + b, 1, 1, Color("8a5a2a"))
+	fb(-1, -6 + b, 2, 2, Color("e0d8d0"))      # crachá
+	fb(-1, -7 + b, 2, 1, Color("3f6fd1"))
+	fb(2, -10 + b, 1, 1, Color("8a6aa8"))      # olheira
+	var raise := 3.0 if _throw_anim > 0.0 else 0.0
 	if raise == 0.0:
-		# aviãozinho pronto na mão
-		var p := Vector2(9, -14 + bob)
-		draw_colored_polygon(PackedVector2Array([p + Vector2(5, 0), p + Vector2(-4, -3), p + Vector2(-4, 3)]), Fx.OUTLINE)
-		draw_colored_polygon(PackedVector2Array([p + Vector2(4, 0), p + Vector2(-3, -2), p + Vector2(-3, 2)]), PAPER)
-	draw_front_arm(POLO, bob, raise)
+		var p := Vector2(5, -6 + b)
+		draw_colored_polygon(PackedVector2Array([p + Vector2(3, 0), p + Vector2(-2, -2), p + Vector2(-2, 2)]), Fx.OUTLINE)
+		draw_colored_polygon(PackedVector2Array([p + Vector2(2, 0), p + Vector2(-1, -1), p + Vector2(-1, 1)]), PAPER)
+	draw_front_arm(POLO, b, raise)

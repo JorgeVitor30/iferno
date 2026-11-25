@@ -45,6 +45,7 @@ func _ready() -> void:
 
 func _style(l: Label, size: int, color: Color) -> void:
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	l.add_theme_font_override("font", ThemeDB.fallback_font)
 	l.add_theme_font_size_override("font_size", Fx.px(size))
 	l.add_theme_color_override("font_color", color)
 	l.add_theme_color_override("font_outline_color", OUTLINE)

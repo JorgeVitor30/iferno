@@ -20,14 +20,16 @@ func _draw() -> void:
 	rng.seed = _seed
 	match kind:
 		"tinta", "agua":
-			var c := Color(color, 0.85 if kind == "tinta" else 0.45)
-			draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.55))
-			draw_circle(Vector2.ZERO, rng.randf_range(5, 8), c)
-			for i in 4:
-				var p := Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(5, 10)
-				draw_circle(p.round(), rng.randf_range(1.5, 3.5), c)
+			# bolhas em pixel grosso (unidades de 2px)
+			var c := Color(color, 0.8 if kind == "tinta" else 0.4)
+			draw_set_transform(Vector2.ZERO, 0.0, Vector2(2, 2))
+			draw_rect(Rect2(-3, -1, 6, 2), c)
+			draw_rect(Rect2(-2, -2, 4, 4), c)
+			for i in 3:
+				var p := Vector2(rng.randi_range(-5, 4), rng.randi_range(-2, 1))
+				draw_rect(Rect2(p, Vector2(rng.randi_range(1, 2), 1)), c)
 			if kind == "agua":
-				draw_rect(Rect2(-3, -2, 2, 1), Color(1, 1, 1, 0.6)) # brilho
+				draw_rect(Rect2(-2, -1, 1, 1), Color(1, 1, 1, 0.5))
 		"papel":
 			for i in 3:
 				var p := Vector2(rng.randf_range(-8, 8), rng.randf_range(-4, 4)).round()

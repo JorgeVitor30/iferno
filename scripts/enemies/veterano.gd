@@ -85,27 +85,20 @@ func _draw_overlay() -> void:
 			draw_line(p0, p0 + _dir * 7.0, Color(1, 0.3, 0.3, a), 2.0)
 
 func _draw_body() -> void:
-	var bob := draw_person(Color("e8e4dc"), Color("3a5a8a"), Color("2a1a14"))
+	# camiseta branca suja de tinta, bandana, pintura de guerra e balde de tinta
+	var b := draw_person(Color("d8d4cc"), Color("2e4a78"), Color("2a1a14"))
 	if _state == State.DASH:
-		bob -= 2.0
-	# Manchas de tinta na camiseta e pintura de guerra no rosto
-	draw_rect(Rect2(-4, -17 + bob, 3, 2), _paint)
-	draw_rect(Rect2(1, -13 + bob, 4, 2), _paint)
-	draw_rect(Rect2(-2, -11 + bob, 2, 2), _paint.darkened(0.2))
-	draw_rect(Rect2(0, -24 + bob, 5, 1), _paint)
-	draw_rect(Rect2(-1, -22 + bob, 5, 1), _paint)
-	# Bandana
-	draw_rect(Rect2(-5, -29 + bob, 10, 2), Color("d94a4a"))
-	draw_rect(Rect2(-8, -29 + bob, 3, 1), Color("d94a4a"))
-	# Balde de tinta na mão da frente
-	var lift := 3.0 if _state == State.AIM else 0.0
-	var bucket := Rect2(5, -12 + bob - lift, 7, 7)
-	draw_rect(bucket.grow(1.0), Fx.OUTLINE)
-	draw_rect(bucket, Color("b8b8c4"))
-	draw_rect(Rect2(bucket.position, Vector2(7, 2)), _paint)
-	draw_front_arm(Color("e8e4dc"), bob, lift)
+		b -= 1.0
+	fb(-2, -6 + b, 2, 1, _paint)
+	fb(0, -4 + b, 2, 1, _paint)
+	fb(0, -10 + b, 3, 1, _paint)      # pintura no rosto
+	fb(-4, -13 + b, 8, 1, Color("c0383a")) # bandana
+	fb(-6, -13 + b, 2, 1, Color("c0383a"))
+	var lift := 2.0 if _state == State.AIM else 0.0
+	bb(3, -6 + b - lift, 4, 4, Color("8a8498"))
+	fb(3, -6 + b - lift, 4, 1, _paint)
+	draw_front_arm(Color("d8d4cc"), b, lift)
 	if _state == State.TIRED:
-		# gotinhas de suor
-		var y := -32.0 + bob - fmod(anim_t * 20.0, 6.0)
-		draw_rect(Rect2(-8, y, 2, 2), Color("7ec8e3"))
-		draw_rect(Rect2(7, y + 3, 2, 2), Color("7ec8e3"))
+		var y := -17.0 + b - fmod(anim_t * 10.0, 3.0)
+		fb(-4, y, 1, 1, Color("6de2f1"))
+		fb(4, y + 1, 1, 1, Color("6de2f1"))

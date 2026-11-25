@@ -31,4 +31,6 @@ func _physics_process(delta: float) -> void:
 	position += direction * speed * delta
 
 func _draw() -> void:
-	draw_circle(Vector2.ZERO, 2.0, Color("ff6b3d"))
+	draw_rect(Rect2(-3, -3, 6, 6), Color("0b0612"))
+	draw_rect(Rect2(-2, -2, 4, 4), Color("ff9a3d"))
+	draw_rect(Rect2(-1, -1, 2, 2), Color("ffe08a"))

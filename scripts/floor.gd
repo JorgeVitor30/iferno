@@ -7,9 +7,9 @@ extends Node2D
 ## de surpresa em alguma sala comum.
 
 const CELL := Vector2(784, 560) # distância entre os centros de salas vizinhas
-const CORRIDOR_TINT := Color(0.9, 0.88, 0.84)
-const FLOOR_TEX := preload("res://assets/tilesets/floor_tile.png")
-const WALL_TEX := preload("res://assets/tilesets/wall_front.png")
+const CORRIDOR_TINT := Color(0.86, 0.84, 0.9)
+const FLOOR_TEX := preload("res://assets/tilesets/clean/floor.png")
+const WALL_TEX := preload("res://assets/tilesets/clean/wall.png")
 const FLOOR_NAMES := ["ENTRADA DA FACULDADE", "BLOCO DE AULAS", "BIBLIOTECA CENTRAL", "LABORATÓRIOS", "REITORIA"]
 const ROOM_POOL := ["sala_aula", "sala_aula", "sala_aula", "biblioteca", "laboratorio", "cantina",
 	"sala_prof", "xerox", "informatica", "banheiro"]
@@ -175,7 +175,7 @@ func _build_corridor(a: Room, b: Room) -> void:
 	add_child(n)
 	_tiled(n, FLOOR_TEX, floor_r, CORRIDOR_TINT)
 	if face_r.size.x > 0.0:
-		_tiled(n, WALL_TEX, face_r, Color(0.92, 0.92, 0.92))
+		_tiled(n, WALL_TEX, face_r, Color(0.9, 0.9, 0.95))
 		if face_r.size.x > 120.0 and randf() < 0.7:
 			var text: String = POSTERS.pick_random()
 			var px := face_r.get_center().x + randf_range(-30, 30)
@@ -199,15 +199,8 @@ func _build_corridor(a: Room, b: Room) -> void:
 		n.add_child(body)
 
 func _tiled(parent: Node, tex: Texture2D, r: Rect2, tint: Color) -> void:
-	var s := Sprite2D.new()
-	s.texture = tex
-	s.centered = false
-	s.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
-	s.region_enabled = true
-	s.region_rect = Rect2(Vector2.ZERO, r.size)
-	s.position = r.position
-	s.modulate = tint
-	parent.add_child(s)
+	if r.size.x > 0.0 and r.size.y > 0.0:
+		Fx.tiled(parent, tex, r, tint)
 
 ## Fundo escuro atrás de tudo (num nó com z bem baixo).
 func _add_background() -> void:
@@ -216,7 +209,7 @@ func _add_background() -> void:
 		bounds = bounds.merge(Rect2(Vector2(c) * CELL - CELL, CELL * 2))
 	var bg := Node2D.new()
 	bg.z_index = -20
-	bg.draw.connect(func(): bg.draw_rect(bounds.grow(400), Color("0d0910")))
+	bg.draw.connect(func(): bg.draw_rect(bounds.grow(400), Fx.BG))
 	add_child(bg)
 
 # ---------------------------------------------------------------- jogo

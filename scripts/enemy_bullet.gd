@@ -10,8 +10,8 @@ extends Area2D
 ## `curve` faz o projétil andar numa curva em vez de reto: "log" segue y = a·ln(1 + x/k).
 ## Durante o dodge roll o jogador atravessa o papel sem tomar dano.
 
-const OUTLINE := Color("1a1020")
-const PAPER := Color("f4efe2")
+const OUTLINE := Color("0b0612")
+const PAPER := Color("e8e0d8")
 const HEIGHT := 11.0
 
 var kind := "bolinha"
@@ -101,45 +101,44 @@ func _explode() -> void:
 
 func _draw() -> void:
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.45))
-	draw_circle(Vector2.ZERO, 3.5, Color(0, 0, 0, 0.3))
+	draw_circle(Vector2.ZERO, 4.0, Color(0, 0, 0, 0.35))
 	var up := Vector2(0, -HEIGHT)
+	var A := Fx.ART
+	# Estilo clean: tudo em unidades de arte (2px) e girando em passos (90° ou 45°)
+	# pra não desmanchar o pixel.
+	var spin90 := snappedf(_spin, PI / 2.0)
 	match kind:
 		"prova":
-			draw_set_transform(up, _spin, Vector2.ONE)
-			draw_rect(Rect2(-4, -5, 8, 10), OUTLINE)
-			draw_rect(Rect2(-3, -4, 6, 8), PAPER)
-			draw_rect(Rect2(-2, -2, 4, 1), Color("9a9aa8"))
-			draw_rect(Rect2(-2, 0, 4, 1), Color("9a9aa8"))
-			draw_rect(Rect2(0, 2, 2, 2), Color("e0382f")) # nota vermelha
+			draw_set_transform(up, spin90, Vector2(A, A))
+			draw_rect(Rect2(-2.5, -3, 5, 6), OUTLINE)
+			draw_rect(Rect2(-1.5, -2, 3, 4), PAPER)
+			draw_rect(Rect2(-1.5, -1, 3, 1), Color("a8a0b0"))
+			draw_rect(Rect2(0, 1, 1, 1), Color("e0382f")) # nota vermelha
 		"aviao":
-			draw_set_transform(up, direction.angle(), Vector2.ONE)
-			var pts := PackedVector2Array([Vector2(6, 0), Vector2(-5, -5), Vector2(-3, 0), Vector2(-5, 5)])
-			var outline := PackedVector2Array([Vector2(8, 0), Vector2(-6, -7), Vector2(-4, 0), Vector2(-6, 7)])
-			draw_colored_polygon(outline, OUTLINE)
-			draw_colored_polygon(pts, PAPER)
-			draw_line(Vector2(-3, 0), Vector2(5, 0), Color("b8b4c8"), 1.0)
+			draw_set_transform(up, snappedf(direction.angle(), PI / 4.0), Vector2(A, A))
+			draw_colored_polygon(PackedVector2Array([Vector2(4, 0), Vector2(-3, -3), Vector2(-2, 0), Vector2(-3, 3)]), OUTLINE)
+			draw_colored_polygon(PackedVector2Array([Vector2(3, 0), Vector2(-2, -2), Vector2(-1, 0), Vector2(-2, 2)]), PAPER)
 		"giz":
-			draw_set_transform(up)
-			draw_circle(Vector2.ZERO, 4.0, OUTLINE)
-			draw_circle(Vector2.ZERO, 3.0, Color("fff4b0"))
-			draw_rect(Rect2(-1, -2, 1, 1), Color.WHITE)
+			draw_set_transform(up, 0.0, Vector2(A, A))
+			draw_rect(Rect2(-2, -2, 4, 4), OUTLINE)
+			draw_rect(Rect2(-1, -1, 2, 2), Color("fff4b0"))
 		"digito":
 			draw_set_transform(up)
-			draw_rect(Rect2(-4, -6, 9, 11), OUTLINE)
-			draw_rect(Rect2(-3, -5, 7, 9), Color("a8d8a0"))
+			draw_rect(Rect2(-5, -7, 10, 12), OUTLINE)
+			draw_rect(Rect2(-3, -5, 6, 8), Color("a8d8a0"))
 			Fx.text(self, Vector2(-3, 3), digit, OUTLINE, Fx.SMALL, 7, HORIZONTAL_ALIGNMENT_CENTER)
 		"calculadora":
-			draw_set_transform(up - Vector2(0, 4), _spin * 0.6, Vector2.ONE)
-			draw_rect(Rect2(-7, -10, 14, 20), OUTLINE)
-			draw_rect(Rect2(-6, -9, 12, 18), Color("4a4a58"))
-			draw_rect(Rect2(-5, -8, 10, 5), Color("a8d8a0"))
-			for r in 3:
-				for cc in 3:
-					draw_rect(Rect2(-5 + cc * 3.5, -1 + r * 3.2, 2.5, 2.2), Color("d8d8e0") if (r + cc) % 3 != 0 else Color("ff8a4a"))
+			draw_set_transform(up - Vector2(0, 4), spin90, Vector2(A, A))
+			draw_rect(Rect2(-4, -5, 8, 10), OUTLINE)
+			draw_rect(Rect2(-3, -4, 6, 8), Color("4a4a58"))
+			draw_rect(Rect2(-2, -3, 4, 2), Color("a8d8a0"))
+			draw_rect(Rect2(-2, 0, 1, 1), Color("d8d8e0"))
+			draw_rect(Rect2(1, 0, 1, 1), Color("ff8a4a"))
+			draw_rect(Rect2(-2, 2, 1, 1), Color("d8d8e0"))
+			draw_rect(Rect2(1, 2, 1, 1), Color("d8d8e0"))
 		_:
-			draw_set_transform(up, _spin, Vector2.ONE)
-			draw_circle(Vector2.ZERO, 4.5, OUTLINE)
-			draw_circle(Vector2.ZERO, 3.5, PAPER)
-			draw_rect(Rect2(-2, -1, 1, 1), Color("a8a4b8"))
-			draw_rect(Rect2(1, 1, 1, 1), Color("a8a4b8"))
-			draw_rect(Rect2(0, -2, 1, 1), Color("ff7a6a"))
+			draw_set_transform(up, spin90, Vector2(A, A))
+			draw_rect(Rect2(-2, -2, 4, 4), OUTLINE)
+			draw_rect(Rect2(-2, -1, 4, 2), OUTLINE)
+			draw_rect(Rect2(-1, -1, 2, 2), PAPER)
+			draw_rect(Rect2(0, -1, 1, 1), Color("ff7a6a"))
