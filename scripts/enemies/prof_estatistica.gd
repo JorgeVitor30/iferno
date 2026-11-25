@@ -407,9 +407,10 @@ func _on_death() -> void:
 
 # ---------------------------------------------------------------- desenho
 
-func _o(r: Rect2, c: Color) -> void:
+func _o(r: Rect2, c: Color, dither: bool = true) -> void:
 	draw_rect(r.grow(1.0), Fx.OUTLINE)
 	draw_rect(r, c)
+	Fx.bevel(self, r, c, dither)
 
 func _draw_overlay() -> void:
 	# Aviso da regressão linear: reta tracejada piscando
@@ -460,6 +461,11 @@ func _draw_body() -> void:
 	# --- cintura (calça alta) e camisa
 	_o(Rect2(-15, -43 + u, 30, 8), PANTS)
 	_o(Rect2(-16, -67 + u, 32, 25), SHIRT)
+	# xadrezinho bem leve na camisa
+	for sy in range(-65, -44, 4):
+		draw_rect(Rect2(-15, sy + u, 30, 1), Color(SHIRT_SHADE, 0.45))
+	for sx in range(-14, 15, 4):
+		draw_rect(Rect2(sx, -66 + u, 1, 23), Color(SHIRT_SHADE, 0.35))
 	draw_rect(Rect2(8, -67 + u, 8, 25), SHIRT_SHADE)
 	for by in [-62, -56, -50]:
 		draw_rect(Rect2(-1, by + u, 2, 2), Color("8aa4b0"))
@@ -507,7 +513,7 @@ func _draw_body() -> void:
 	_o(Rect2(14, -89 + u, 5, 10), skin)
 	draw_rect(Rect2(-18, -86 + u, 2, 5), skin_sh)
 	draw_rect(Rect2(16, -86 + u, 2, 5), skin_sh)
-	_o(Rect2(-15, -99 + u, 30, 28), skin)
+	_o(Rect2(-15, -99 + u, 30, 28), skin, false)
 	draw_rect(Rect2(-15, -75 + u, 30, 4), skin_sh)
 	# cabelo com topete pro lado
 	_o(Rect2(-16, -105 + u, 32, 10), HAIR)

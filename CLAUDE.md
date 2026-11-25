@@ -6,7 +6,8 @@
 - Resolução base 640x360, stretch `viewport` + escala inteira, filtro nearest, snap de pixel ligado. Sprites em múltiplos de 16px.
 - GDScript com tipagem estática, tabs, comentários em português.
 - Pastas: `scenes/`, `scripts/`, `assets/{sprites,tilesets,sfx,music,fonts}`.
-- Placeholders são desenhados com `_draw()` até existirem sprites.
+- Placeholders são desenhados com `_draw()` até existirem sprites. Use `Fx.orect`/`Fx.bevel` (contorno + luz/sombra + pontilhado) pra ficar no mesmo nível de detalhe do protagonista. Não gire sprites de pixel art (borra).
+- Textos: fonte pixel própria (`tools/build_pixel_font.py` → `assets/fonts/`, montada no autoload `PixelFont`). Só fica nítida em 11 ou 22 (`Fx.SMALL`/`Fx.BIG`); `Fx.text` e `Fx.float_text` já arredondam.
 - Camadas de colisão: 1 = paredes/cenário, 2 = jogador, 3 = inimigos (corpo), 4 = hurtbox dos inimigos (onde o tiro do jogador acerta).
 - Andares: `scenes/floor.tscn` + `scripts/floor.gd` (geração), `room.gd` (sala, portas, ondas), `scripts/enemies/*.gd` (herdam de `enemy.gd`).
 - Commits e branches: seguir `COMMITS.md` (ex.: branch `feat/inimigo-espiral`, commit `feat(enemy): ...`). `main` sempre roda.

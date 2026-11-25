@@ -172,10 +172,10 @@ func say(text: String) -> void:
 	var l := Label.new()
 	l.text = text
 	l.z_index = 25
-	l.add_theme_font_size_override("font_size", 9)
+	l.add_theme_font_size_override("font_size", Fx.SMALL)
 	l.add_theme_color_override("font_color", Color.WHITE)
 	l.add_theme_color_override("font_outline_color", OUTLINE)
-	l.add_theme_constant_override("outline_size", 4)
+	l.add_theme_constant_override("outline_size", 2)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.size = Vector2(140, 12)
 	l.position = Vector2(-70, -(head_y + 14.0) * body_scale)
@@ -274,15 +274,21 @@ func draw_person(outfit: Color, pants: Color, hair: Color, skin: Color = SKIN) -
 	for r: Rect2 in legs + [torso, head, back_arm]:
 		draw_rect(r.grow(1.0), OUTLINE)
 	draw_rect(back_arm, dark)
+	Fx.bevel(self, back_arm, dark, false)
 	for r: Rect2 in legs:
 		draw_rect(r, pants)
+		Fx.bevel(self, r, pants, false)
 		draw_rect(Rect2(r.position.x, r.end.y - 2, r.size.x, 2), OUTLINE) # sapato
 	draw_rect(torso, outfit)
+	Fx.bevel(self, torso, outfit)
 	draw_rect(Rect2(torso.position.x, torso.end.y - 2, torso.size.x, 2), dark)
 	draw_rect(head, skin)
+	Fx.bevel(self, head, skin, false)
 	draw_rect(Rect2(head.position.x, head.end.y - 2, head.size.x, 2), skin.darkened(0.15))
 	draw_rect(Rect2(-5, -31 + bob, 10, 4), hair)  # topo do cabelo
+	draw_rect(Rect2(-5, -31 + bob, 10, 1), hair.lightened(0.25)) # brilho do cabelo
 	draw_rect(Rect2(-5, -29 + bob, 3, 6), hair)   # nuca
+	draw_rect(Rect2(-4, -27 + bob, 1, 3), hair.darkened(0.25))
 	draw_rect(Rect2(2, -26 + bob, 2, 2), OUTLINE) # olho
 	return bob
 
@@ -291,4 +297,5 @@ func draw_front_arm(outfit: Color, bob: float, raise: float = 0.0, skin: Color =
 	var r := Rect2(4, -19 + bob - raise, 3, 9)
 	draw_rect(r.grow(1.0), OUTLINE)
 	draw_rect(r, outfit.darkened(0.1))
+	Fx.bevel(self, r, outfit.darkened(0.1), false)
 	draw_rect(Rect2(4, r.end.y - 2, 3, 2), skin)

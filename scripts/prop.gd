@@ -64,8 +64,7 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _o(r: Rect2, c: Color) -> void:
-	draw_rect(r.grow(1.0), OUTLINE)
-	draw_rect(r, c)
+	Fx.orect(self, r, c) # contorno + luz/sombra + pontilhado
 
 func _draw() -> void:
 	var s: Vector2 = KINDS[kind][0]

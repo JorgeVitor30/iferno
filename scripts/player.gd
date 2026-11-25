@@ -12,7 +12,7 @@ signal died
 @export var speed := 90.0
 @export var accel := 900.0     # quão rápido chega na velocidade máxima
 @export var friction := 1100.0 # quão rápido para ao soltar as teclas
-@export var walk_tilt_deg := 3.0 # quanto o boneco ginga pros lados ao andar
+@export var walk_tilt_deg := 0.0 # (desligado: girar pixel art borra; a gingada virou 1px de sobe-e-desce)
 @export var roll_distance := 64.0 # quanto o dodge anda (o boneco tem ~39px de altura)
 @export var roll_time := 0.45     # duração do dodge (invencível o tempo todo)
 @export var roll_cooldown := 0.4  # espera depois do dodge antes de poder rolar de novo
@@ -155,11 +155,14 @@ func _process(delta: float) -> void:
 	if moving:
 		spr.speed_scale = clampf(velocity.length() / speed, 0.5, 1.2)
 		# 8 quadros = 2 passos: a gingada vai e volta duas vezes por ciclo
+		# Sem girar o sprite: girar pixel art desmancha os pixels e fica borrado.
+		# A gingada agora é só 1px de sobe-e-desce, no ritmo dos passos.
 		var count := spr.sprite_frames.get_frame_count(spr.animation)
 		var ph := (spr.frame + spr.frame_progress) / count * TAU * 2.0
-		spr.rotation = sin(ph) * deg_to_rad(walk_tilt_deg)
+		spr.position.y = SPRITE_Y - (1.0 if sin(ph) > 0.0 else 0.0)
+		spr.rotation = 0.0
 	else:
-		spr.rotation = lerp_angle(spr.rotation, 0.0, minf(delta * 20.0, 1.0))
+		spr.rotation = 0.0
 		spr.speed_scale = 1.0
 	# Arma atrás do corpo quando mira pra cima.
 	$Gun.z_index = -1 if aim.y < -0.3 else 0
