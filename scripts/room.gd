@@ -19,6 +19,7 @@ const ENEMIES := {
 	"professor": preload("res://scripts/enemies/professor.gd"),
 	"estagiario": preload("res://scripts/enemies/estagiario.gd"),
 	"coordenadora": preload("res://scripts/enemies/coordenadora.gd"),
+	"prof_estatistica": preload("res://scripts/enemies/prof_estatistica.gd"),
 }
 const COST := {"estagiario": 2, "zelador": 2, "veterano": 3, "professor": 3, "coordenadora": 8}
 
@@ -27,8 +28,11 @@ const CAP := 8.0     # espessura do topo escuro das paredes
 const DOOR_W := 48.0 # largura dos vãos de porta e corredores
 const CAP_COLOR := Color("1c1420")
 const OUTLINE := Color("1a1020")
+const MIN_SIZE := Vector2(384, 256)
+const MAX_SIZE := Vector2(640, 384) # cabe na célula do andar com corredor sobrando
 
-## Tipos de sala: tamanho do chão, cor do piso, inimigos mais comuns, frase ao trancar.
+## Tipos de sala: tamanho base (sorteado em volta disso), cor do piso,
+## inimigos mais comuns e frase ao trancar.
 const KINDS := {
 	"hall": {"size": Vector2(480, 304), "tint": Color(1.0, 0.97, 0.92), "pool": [],
 		"lock": ""},
@@ -50,9 +54,14 @@ const KINDS := {
 	"xerox": {"size": Vector2(432, 288), "tint": Color(0.9, 0.9, 0.92),
 		"pool": ["estagiario", "estagiario", "professor", "zelador"],
 		"lock": "PAPEL PRA TODO LADO!"},
-	"escadaria": {"size": Vector2(528, 336), "tint": Color(0.8, 0.8, 0.88),
-		"pool": ["professor", "zelador", "veterano", "estagiario"],
-		"lock": "A COORDENAÇÃO BARROU A ESCADA!"},
+	"informatica": {"size": Vector2(512, 320), "tint": Color(0.82, 0.86, 0.94),
+		"pool": ["estagiario", "estagiario", "veterano", "professor"],
+		"lock": "O SISTEMA CAIU!"},
+	"banheiro": {"size": Vector2(416, 272), "tint": Color(0.8, 0.92, 0.95),
+		"pool": ["zelador", "zelador", "veterano", "estagiario"],
+		"lock": "INTERDITADO PRA LIMPEZA!"},
+	"auditorio": {"size": Vector2(640, 384), "tint": Color(0.78, 0.72, 0.84),
+		"pool": [], "lock": "PROVA FINAL!"},
 }
 const SUBJECTS := ["Cálculo I", "Física II", "Álgebra Linear", "Estatística", "Programação",
 	"Química Orgânica", "Filosofia", "Economia", "Anatomia", "Direito Civil"]
@@ -68,6 +77,7 @@ var title := ""
 var floor_level := 1
 var cleared := false
 var visited := false
+var elite_room := false       # a coordenadora aparece na última onda
 var entities: Node2D          # onde vão móveis, inimigos, portas (y-sort)
 
 var _waves: Array = []
@@ -77,6 +87,9 @@ var _active := false
 var _doors: Array[Node2D] = []
 var _footprints: Array[Rect2] = []
 var _board_text := ""
+var _clearing := 40.0        # raio do espaço livre no meio (sorteado)
+var _swap := false           # inverte esquerda/direita da decoração
+var _rug := false
 
 func setup(g: Vector2i, k: String, center: Vector2, lvl: int, ents: Node2D) -> void:
 	grid = g
@@ -84,6 +97,10 @@ func setup(g: Vector2i, k: String, center: Vector2, lvl: int, ents: Node2D) -> v
 	floor_level = lvl
 	entities = ents
 	var size: Vector2 = KINDS[k]["size"]
+	if k != "auditorio" and k != "hall":
+		# Tamanho sorteado em passos de 32px em volta do tamanho base
+		size += Vector2(randi_range(-3, 3), randi_range(-2, 2)) * 32.0
+		size = size.clamp(MIN_SIZE, MAX_SIZE)
 	# Sem arredondar: o centro do chão tem que bater com o centro da célula,
 	# senão as portas de salas vizinhas não ficam alinhadas com o corredor.
 	rect = Rect2(center - size / 2.0, size)
@@ -91,13 +108,21 @@ func setup(g: Vector2i, k: String, center: Vector2, lvl: int, ents: Node2D) -> v
 		"hall": title = "PORTARIA"
 		"sala_aula": title = "SALA %d · %s" % [floor_level * 100 + randi_range(1, 30), SUBJECTS.pick_random()]
 		"biblioteca": title = "BIBLIOTECA"
-		"laboratorio": title = "LABORATÓRIO DE QUÍMICA"
-		"cantina": title = "CANTINA"
+		"laboratorio": title = ["LABORATÓRIO DE QUÍMICA", "LABORATÓRIO DE BIOLOGIA", "LAB. DE FÍSICA"].pick_random()
+		"cantina": title = ["CANTINA", "RESTAURANTE UNIVERSITÁRIO", "LANCHONETE"].pick_random()
 		"sala_prof": title = "SALA DOS PROFESSORES"
 		"xerox": title = "XEROX"
-		"escadaria": title = "ESCADARIA"
+		"informatica": title = "LAB. DE INFORMÁTICA %d" % randi_range(1, 4)
+		"banheiro": title = ["BANHEIRO MASCULINO", "BANHEIRO FEMININO"].pick_random()
+		"auditorio": title = "AUDITÓRIO · ESTATÍSTICA"
 	_board_text = BOARD_TEXTS.pick_random()
+	_clearing = randf_range(36.0, 90.0)
+	_swap = randf() < 0.5
+	_rug = randf() < 0.5
 	cleared = k == "hall"
+
+func is_boss_room() -> bool:
+	return kind == "auditorio"
 
 func has_side(s: Vector2i) -> bool:
 	return sides.has(s)
@@ -107,6 +132,8 @@ func build() -> void:
 	z_index = -10
 	var r := rect
 	var tint: Color = KINDS[kind]["tint"]
+	# cada sala com o piso um pouquinho diferente
+	tint = tint * Color(randf_range(0.94, 1.04), randf_range(0.94, 1.04), randf_range(0.94, 1.04))
 	_tiled(FLOOR_TEX, r, tint)
 	var cx := r.get_center().x
 	var cy := r.get_center().y
@@ -218,13 +245,21 @@ func _draw() -> void:
 
 # ---------------------------------------------------------------- móveis
 
+## Caminhos que precisam ficar livres: de cada porta até o meio, mais um
+## espaço aberto no centro (tamanho sorteado) pra dar pra lutar.
 func _lane_blocked(fp: Rect2) -> bool:
 	var c := rect.get_center()
-	# Cruz livre no meio (caminho entre as portas e espaço pra lutar)
-	if fp.end.x > c.x - 40 and fp.position.x < c.x + 40:
-		return true
-	if fp.end.y > c.y - 36 and fp.position.y < c.y + 36:
-		return true
+	var r := rect
+	var lanes: Array[Rect2] = [Rect2(c - Vector2(_clearing, _clearing * 0.7), Vector2(_clearing * 2, _clearing * 1.4))]
+	for s in sides:
+		match s:
+			Vector2i.LEFT: lanes.append(Rect2(r.position.x, c.y - 34, c.x - r.position.x, 68))
+			Vector2i.RIGHT: lanes.append(Rect2(c.x, c.y - 34, r.end.x - c.x, 68))
+			Vector2i.UP: lanes.append(Rect2(c.x - 38, r.position.y, 76, c.y - r.position.y))
+			Vector2i.DOWN: lanes.append(Rect2(c.x - 38, c.y, 76, r.end.y - c.y))
+	for lane in lanes:
+		if lane.intersects(fp):
+			return true
 	return false
 
 func _prop(k: String, base: Vector2, ignore_lanes: bool = false) -> bool:
@@ -233,7 +268,7 @@ func _prop(k: String, base: Vector2, ignore_lanes: bool = false) -> bool:
 	var solid := Rect2(fp.position.x, base.y - 12, fp.size.x, 12)
 	if not rect.grow(-6).encloses(Rect2(solid.position.x, base.y - 2, solid.size.x, 2)):
 		return false
-	if not ignore_lanes and _lane_blocked(Rect2(fp.position.x, base.y - 12, fp.size.x, 12)):
+	if not ignore_lanes and _lane_blocked(solid):
 		return false
 	for other in _footprints:
 		if other.grow(4).intersects(fp):
@@ -245,15 +280,35 @@ func _prop(k: String, base: Vector2, ignore_lanes: bool = false) -> bool:
 	_footprints.append(fp)
 	return true
 
-func _grid(k: String, x0: float, y0: float, x1: float, y1: float, step: Vector2, chance: float = 1.0) -> void:
+func _grid(k: String, x0: float, y0: float, x1: float, y1: float, step: Vector2, chance: float = 1.0, stagger: float = 0.0) -> void:
 	var y := y0
+	var row := 0
 	while y <= y1:
-		var x := x0
+		var x := x0 + (stagger if row % 2 == 1 else 0.0)
 		while x <= x1:
 			if randf() <= chance:
 				_prop(k, Vector2(x, y))
 			x += step.x
 		y += step.y
+		row += 1
+
+## Joga `count` objetos sorteados em lugares aleatórios da sala.
+func _scatter(kinds: Array, count: int, top_margin: float = 50.0) -> void:
+	for i in count:
+		for tries in 12:
+			var p := Vector2(randf_range(rect.position.x + 16, rect.end.x - 16),
+				randf_range(rect.position.y + top_margin, rect.end.y - 10))
+			if _prop(kinds.pick_random(), p):
+				break
+
+## Objetos encostados na parede de cima, em posições sorteadas.
+func _along_top(kinds: Array, count: int) -> void:
+	for i in count:
+		for tries in 12:
+			var k: String = kinds.pick_random()
+			var y := rect.position.y + (14.0 if k in ["armarios", "estante", "cabine", "vending", "pilar"] else 28.0)
+			if _prop(k, Vector2(randf_range(rect.position.x + 30, rect.end.x - 30), y)):
+				break
 
 func _furnish(cx: float, cy: float) -> void:
 	var r := rect
@@ -261,11 +316,12 @@ func _furnish(cx: float, cy: float) -> void:
 	var T := r.position.y
 	var R := r.end.x
 	var B := r.end.y
+	var v := randi() % 3 # variação do layout
 	match kind:
 		"hall":
-			_prop("balcao", Vector2(cx - 130, T + 70))
-			_prop("vending", Vector2(R - 40, T + 30))
-			_prop("bebedouro", Vector2(L + 30, T + 28))
+			_prop("balcao", Vector2(cx + (130 if _swap else -130), T + 70))
+			_prop("vending", Vector2(R - 40 if not _swap else L + 40, T + 30))
+			_prop("bebedouro", Vector2(L + 30 if not _swap else R - 30, T + 28))
 			for x in [L + 20, R - 20]:
 				_prop("vaso", Vector2(x, B - 10), true)
 			# linha de catracas com passagem no meio
@@ -274,50 +330,123 @@ func _furnish(cx: float, cy: float) -> void:
 				if absf(x - cx) > 44:
 					_prop("catraca", Vector2(x, B - 80), true)
 				x += 20
+			_scatter(["vaso", "lixeira"], 2)
 		"sala_aula":
-			_prop("mesa_prof", Vector2(L + r.size.x * 0.25, T + 40))
-			_prop("vaso", Vector2(R - 18, T + 26))
-			_grid("carteira", L + 34, T + 92, R - 30, B - 20, Vector2(40, 42))
+			_prop("mesa_prof", Vector2(L + r.size.x * (0.75 if _swap else 0.25), T + 40))
+			match v:
+				0: # fileiras
+					_grid("carteira", L + 34, T + 92, R - 30, B - 20, Vector2(40, 42))
+				1: # grupos de 4 carteiras
+					var y := T + 100.0
+					while y < B - 40:
+						var x := L + 50.0
+						while x < R - 50:
+							for o: Vector2 in [Vector2(-11, 0), Vector2(11, 0), Vector2(-11, 22), Vector2(11, 22)]:
+								_prop("carteira", Vector2(x, y) + o)
+							x += 96
+						y += 86
+				2: # em U, colado nas paredes
+					_grid("carteira", L + 30, B - 24, R - 30, B - 24, Vector2(38, 40))
+					_grid("carteira", L + 24, T + 100, L + 24, B - 60, Vector2(40, 40))
+					_grid("carteira", R - 24, T + 100, R - 24, B - 60, Vector2(40, 40))
+					_prop("pilar", Vector2(cx - 120, cy + 10))
+					_prop("pilar", Vector2(cx + 120, cy + 10))
+			_scatter(["vaso", "lixeira"], randi_range(0, 2))
 		"biblioteca":
-			_grid("estante", L + 48, T + 60, R - 40, B - 30, Vector2(70, 88))
-			_prop("vaso", Vector2(L + 16, B - 10))
-			_prop("vaso", Vector2(R - 16, B - 10))
-			_prop("mesa_prof", Vector2(cx + 100, T + 34))
+			match v:
+				0: # fileiras de estantes
+					_grid("estante", L + 48, T + 60, R - 40, B - 30, Vector2(70, 88))
+				1: # colunas de estantes (corredores verticais)
+					_grid("estante", L + 40, T + 60, R - 40, B - 20, Vector2(110, 46))
+				2: # estantes nas paredes + mesas de leitura no meio
+					_along_top(["estante"], 5)
+					_grid("mesa_cantina", L + 70, T + 110, R - 70, B - 30, Vector2(120, 80))
+			_prop("mesa_prof", Vector2(cx + (-100 if _swap else 100), T + 34))
+			_scatter(["vaso", "pilha_papel", "lixeira"], randi_range(1, 4))
 		"laboratorio":
-			_prop("armarios", Vector2(L + 40, T + 14))
-			_prop("armarios", Vector2(R - 40, T + 14))
-			_grid("bancada", L + 50, T + 100, R - 48, B - 24, Vector2(92, 76))
+			_along_top(["armarios"], 2)
+			match v:
+				0:
+					_grid("bancada", L + 50, T + 100, R - 48, B - 24, Vector2(92, 76))
+				1: # bancadas desencontradas
+					_grid("bancada", L + 50, T + 96, R - 48, B - 24, Vector2(120, 64), 1.0, 60.0)
+				2: # ilhas grandes
+					_grid("bancada", L + 70, T + 110, R - 70, B - 30, Vector2(140, 90))
+					_grid("bancada", L + 70, T + 132, R - 70, B - 8, Vector2(140, 90))
+			_scatter(["lixeira", "pilha_papel"], randi_range(0, 2))
 		"cantina":
-			_prop("vending", Vector2(L + 30, T + 26))
-			_prop("vending", Vector2(L + 60, T + 26))
-			_prop("cafeteira", Vector2(R - 40, T + 30))
-			_grid("mesa_cantina", L + 56, T + 90, R - 56, B - 24, Vector2(108, 62))
+			_along_top(["vending", "vending", "cafeteira", "bebedouro"], randi_range(2, 4))
+			match v:
+				0:
+					_grid("mesa_cantina", L + 56, T + 90, R - 56, B - 24, Vector2(108, 62))
+				1:
+					_grid("mesa_cantina", L + 50, T + 90, R - 50, B - 24, Vector2(130, 56), 1.0, 65.0)
+				2:
+					_scatter(["mesa_cantina"], 8, 80.0)
+			_scatter(["lixeira", "vaso"], randi_range(1, 3))
 		"sala_prof":
-			_prop("sofa", Vector2(L + 50, T + 34))
-			_prop("cafeteira", Vector2(R - 40, T + 30))
-			_prop("estante", Vector2(R - 90, T + 24))
-			_grid("mesa_cantina", L + 60, T + 110, R - 60, B - 30, Vector2(120, 90))
-			_prop("vaso", Vector2(L + 16, B - 10))
+			_along_top(["sofa", "cafeteira", "estante", "armarios"], 3)
+			if v == 0:
+				_grid("mesa_cantina", L + 60, T + 110, R - 60, B - 30, Vector2(120, 90))
+			else:
+				_scatter(["mesa_prof", "sofa", "mesa_cantina"], 4, 70.0)
+			_scatter(["vaso", "pilha_papel"], randi_range(1, 3))
 		"xerox":
-			var x := L + 30
-			while x < R - 20:
-				_prop("copiadora", Vector2(x, T + 26))
-				x += 44
-			for i in 10:
-				_prop("pilha_papel", Vector2(randf_range(L + 20, R - 20), randf_range(T + 70, B - 16)))
-		"escadaria":
-			_prop("armarios", Vector2(L + 36, T + 14))
-			_prop("armarios", Vector2(R - 36, T + 14))
-			for i in 6:
-				_prop("pilha_papel", Vector2(randf_range(L + 20, R - 20), randf_range(T + 70, B - 16)))
-			_prop("vaso", Vector2(L + 16, B - 10))
-			_prop("vaso", Vector2(R - 16, B - 10))
+			if v != 1:
+				var x := L + 30
+				while x < R - 20:
+					_prop("copiadora", Vector2(x, T + 26))
+					x += randf_range(40, 60)
+			else:
+				_grid("copiadora", L + 50, T + 90, R - 50, B - 30, Vector2(80, 70))
+			_scatter(["pilha_papel"], randi_range(6, 12), 60.0)
+		"informatica":
+			match v:
+				0:
+					_grid("pc", L + 34, T + 80, R - 30, B - 20, Vector2(34, 46))
+				1: # bancadas de PC em fileiras longas
+					_grid("pc", L + 30, T + 90, R - 30, B - 20, Vector2(28, 70))
+				2: # PCs nas paredes
+					_grid("pc", L + 30, T + 28, R - 30, T + 28, Vector2(32, 40))
+					_grid("pc", L + 30, B - 16, R - 30, B - 16, Vector2(32, 40))
+					_scatter(["pc"], 4, 80.0)
+			_scatter(["lixeira", "pilha_papel"], randi_range(0, 2))
+		"banheiro":
+			# cabines numa parede, pias na outra
+			var x := L + 26.0
+			while x < R - 24:
+				_prop("cabine", Vector2(x, T + 14))
+				x += 32
+			_grid("pia", L + 30, B - 14, R - 30, B - 14, Vector2(30, 30))
+			for i in randi_range(2, 5):
+				var d: Node2D = preload("res://scripts/decal.gd").new()
+				d.kind = "agua"
+				d.color = Color("7ec8e3")
+				d.position = Vector2(randf_range(L + 20, R - 20), randf_range(T + 60, B - 30))
+				entities.add_child(d)
+			_scatter(["lixeira"], 1)
+		"auditorio":
+			# Palco em cima (o chefe fica lá), plateia embaixo
+			_prop("pulpito", Vector2(cx + (80 if _swap else -80), T + 44))
+			_grid("poltronas", L + 50, cy + 60, R - 50, B - 14, Vector2(70, 30))
+			_prop("pilar", Vector2(L + 30, cy - 10), true)
+			_prop("pilar", Vector2(R - 30, cy - 10), true)
+	# Pilar no meio do caminho em salas grandes (cobertura extra)
+	if kind not in ["hall", "auditorio", "banheiro"] and r.size.x >= 544 and randf() < 0.5:
+		_prop("pilar", Vector2(cx + randf_range(-160, 160), cy + randf_range(-60, 80)))
 
 # ---------------------------------------------------------------- decoração desenhada
 
 func _draw_floor_decor(n: Node2D) -> void:
 	var r := rect
 	var c := r.get_center()
+	if _rug and kind in ["biblioteca", "sala_prof", "sala_aula", "xerox"]:
+		var rug := Rect2(c.x - 70, c.y - 46, 140, 92)
+		var hue := fmod(float(grid.x * 37 + grid.y * 91) / 100.0, 1.0)
+		var base := Color.from_hsv(absf(hue), 0.45, 0.4)
+		n.draw_rect(rug, base)
+		n.draw_rect(rug.grow(-3), base.lightened(0.2))
+		n.draw_rect(rug.grow(-10), base)
 	match kind:
 		"hall":
 			# tapete vermelho da porta até o meio
@@ -325,26 +454,46 @@ func _draw_floor_decor(n: Node2D) -> void:
 			n.draw_rect(Rect2(c.x - 20, c.y - 40, 40, r.end.y - c.y + 40), Color("b83a3a"))
 			n.draw_rect(Rect2(c.x - 30, r.end.y - 14, 60, 12), Color("4a4040")) # capacho
 			Fx.text(n, Vector2(c.x - 30, r.end.y - 5), "BEM-VINDO", Color("c8b8a0"), 7, 60, HORIZONTAL_ALIGNMENT_CENTER)
-		"biblioteca", "sala_prof":
-			var rug := Rect2(c.x - 70, c.y - 46, 140, 92)
-			n.draw_rect(rug, Color("5a2a4a"))
-			n.draw_rect(rug.grow(-3), Color("7a3a5a"))
-			n.draw_rect(rug.grow(-10), Color("5a2a4a"))
 		"laboratorio":
-			# faixa de segurança no chão
-			var y := c.y + 30
-			var x := r.position.x + 8
-			var i := 0
-			while x < r.end.x - 8:
-				n.draw_rect(Rect2(x, y, 8, 4), Color("ffd23f") if i % 2 == 0 else Color("2a2030"))
-				x += 8
-				i += 1
+			_stripes(n, c.y + (30 if _swap else -40))
+		"banheiro":
+			# azulejo xadrez
+			var y := r.position.y
+			while y < r.end.y:
+				var x := r.position.x + (16.0 if int((y - r.position.y) / 16.0) % 2 == 1 else 0.0)
+				while x < r.end.x:
+					n.draw_rect(Rect2(x, y, minf(16, r.end.x - x), minf(16, r.end.y - y)), Color(1, 1, 1, 0.12))
+					x += 32
+				y += 16
+		"auditorio":
+			# palco de madeira em cima
+			var stage := Rect2(r.position.x, r.position.y, r.size.x, 96)
+			n.draw_rect(stage, Color("8a5a3a"))
+			var y2 := stage.position.y + 8
+			while y2 < stage.end.y:
+				n.draw_rect(Rect2(stage.position.x, y2, stage.size.x, 1), Color("6a4028"))
+				y2 += 8
+			n.draw_rect(Rect2(stage.position.x, stage.end.y, stage.size.x, 4), Color("4a2a18"))
+			# tapete do corredor da plateia
+			n.draw_rect(Rect2(c.x - 20, stage.end.y + 4, 40, r.end.y - stage.end.y - 4), Color("6a2a3a"))
+
+func _stripes(n: Node2D, y: float) -> void:
+	var x := rect.position.x + 8
+	var i := 0
+	while x < rect.end.x - 8:
+		n.draw_rect(Rect2(x, y, 8, 4), Color("ffd23f") if i % 2 == 0 else Color("2a2030"))
+		x += 8
+		i += 1
 
 func _draw_wall_decor(n: Node2D) -> void:
 	var r := rect
 	var fy := r.position.y - FACE
 	var left := r.position.x + r.size.x * 0.25
 	var right := r.position.x + r.size.x * 0.75
+	if _swap:
+		var tmp := left
+		left = right
+		right = tmp
 	var mid := r.get_center().x
 	var center_free := not has_side(Vector2i.UP)
 	match kind:
@@ -353,7 +502,10 @@ func _draw_wall_decor(n: Node2D) -> void:
 			_clock(n, right, fy)
 		"sala_aula":
 			_blackboard(n, left, fy, _board_text)
-			_clock(n, right, fy)
+			if grid.x % 2 == 0:
+				_clock(n, right, fy)
+			else:
+				_plaque(n, right, fy, "PROIBIDO CELULAR", Color("5a2a2a"))
 		"biblioteca":
 			_plaque(n, left, fy, "SILÊNCIO", Color("2a3a5a"))
 			_plaque(n, right, fy, "DEVOLVA OS LIVROS", Color("5a2a2a"))
@@ -369,9 +521,30 @@ func _draw_wall_decor(n: Node2D) -> void:
 		"xerox":
 			_plaque(n, left, fy, "XEROX  R$0,25", Color("2a4a3a"))
 			_plaque(n, right, fy, "NÃO TIRAMOS CÓPIA DE LIVRO", Color("5a2a2a"))
-		"escadaria":
-			_exit_sign(n, left, fy)
-			_plaque(n, right, fy, "%dº ANDAR" % (floor_level + 1), Color("2a3a5a"))
+		"informatica":
+			_plaque(n, left, fy, "PROIBIDO COMER", Color("5a2a2a"))
+			_plaque(n, right, fy, "WI-FI: senha123", Color("2a3a5a"))
+		"banheiro":
+			_plaque(n, left, fy, "LAVE AS MÃOS", Color("2a4a5a"))
+			_plaque(n, right, fy, "NÃO JOGUE PAPEL NO VASO", Color("5a2a2a"))
+		"auditorio":
+			_bell_board(n, mid if center_free else left, fy)
+			_plaque(n, right if not center_free else mid + 200.0, fy, "MÉDIA = 7", Color("5a2a2a"))
+
+## Lousa grande com a curva normal desenhada (sala do chefe).
+func _bell_board(n: Node2D, x: float, fy: float) -> void:
+	var b := Rect2(x - 70, fy + 2, 140, 26)
+	n.draw_rect(b.grow(2), Color("7a5236"))
+	n.draw_rect(b, Color("2a4a3a"))
+	var prev := Vector2.ZERO
+	for i in 61:
+		var t := (i - 30) / 12.0
+		var p := Vector2(b.position.x + 10 + i * 2.0, b.end.y - 4 - 18.0 * exp(-t * t / 2.0))
+		if i > 0:
+			n.draw_line(prev, p, Color("e8f0e0"), 1.0)
+		prev = p
+	n.draw_line(Vector2(b.position.x + 8, b.end.y - 4), Vector2(b.end.x - 8, b.end.y - 4), Color("a8c0a0"), 1.0)
+	Fx.text(n, Vector2(b.position.x + 4, b.position.y + 9), "P(passar)=3%", Color("ffd966"), 7)
 
 func _blackboard(n: Node2D, x: float, fy: float, text: String) -> void:
 	var b := Rect2(x - 52, fy + 4, 104, 20)
@@ -451,19 +624,20 @@ func _plan_waves() -> void:
 	_waves.clear()
 	if kind == "hall":
 		return
-	var pool: Array = KINDS[kind]["pool"]
-	# Orçamento de "custo" de inimigos: andar 1 dá ~5-6 inimigos em 2 ondas.
-	var budget := 9 + floor_level * 3 + randi_range(0, 3)
-	if kind == "escadaria":
-		_waves.append(_make_wave(pool, 6 + floor_level * 2))
-		_waves.append(["coordenadora", "estagiario", "zelador"])
+	if is_boss_room():
+		_waves.append(["prof_estatistica"])
 		return
-	if budget >= 10:
-		var first := budget / 2
-		_waves.append(_make_wave(pool, first))
-		_waves.append(_make_wave(pool, budget - first))
-	else:
-		_waves.append(_make_wave(pool, budget))
+	var pool: Array = KINDS[kind]["pool"]
+	# Orçamento de "custo" de inimigos: andar 1 dá ~5-6 inimigos em 1 a 3 ondas.
+	var budget := 9 + floor_level * 3 + randi_range(0, 4)
+	var n_waves := 1 if budget < 10 else randi_range(2, 3 if budget >= 14 else 2)
+	var left := budget
+	for w in n_waves:
+		var part := left if w == n_waves - 1 else int(budget / float(n_waves))
+		_waves.append(_make_wave(pool, part))
+		left -= part
+	if elite_room:
+		(_waves[_waves.size() - 1] as Array).append("coordenadora")
 
 func _make_wave(pool: Array, budget: int) -> Array:
 	var wave: Array = []
@@ -488,8 +662,13 @@ func _on_body_entered(body: Node2D) -> void:
 	for d in _doors:
 		d.close()
 	Fx.shake(self, 4.0)
-	get_tree().call_group("hud", "banner", KINDS[kind]["lock"], Color("ff5a4a"))
-	await get_tree().create_timer(0.5).timeout
+	if is_boss_room():
+		get_tree().call_group("hud", "banner", "PROF. DE ESTATÍSTICA
+PROVA FINAL - MÉDIA 7", Color("ff5a4a"), 2.0)
+		await get_tree().create_timer(1.2).timeout
+	else:
+		get_tree().call_group("hud", "banner", KINDS[kind]["lock"], Color("ff5a4a"))
+		await get_tree().create_timer(0.5).timeout
 	_spawn_wave(0)
 
 func _spawn_wave(i: int) -> void:
@@ -499,9 +678,13 @@ func _spawn_wave(i: int) -> void:
 		var e: Enemy = ENEMIES[t].new()
 		e.floor_level = floor_level
 		e.position = _spawn_point(player)
+		if t == "prof_estatistica":
+			e.position = Vector2(rect.get_center().x, rect.position.y + 64) # no palco
 		e.died.connect(_on_enemy_died)
 		entities.add_child(e)
 		_alive += 1
+		if e.boss:
+			get_tree().call_group("hud", "show_boss", e)
 	_update_counter()
 
 func _spawn_point(player: Node2D) -> Vector2:
@@ -548,12 +731,17 @@ func _clear() -> void:
 	for d in _doors:
 		d.open()
 	get_tree().call_group("hud", "set_counter", -1)
-	get_tree().call_group("hud", "banner", CLEAR_TEXTS.pick_random(), Color("3fd17a"))
-	if randf() < 0.4 or kind == "escadaria":
+	if is_boss_room():
+		get_tree().call_group("hud", "banner", "APROVADO EM ESTATÍSTICA!
+A ESCADA ESTÁ LIBERADA", Color("3fd17a"), 2.0)
+	else:
+		get_tree().call_group("hud", "banner", CLEAR_TEXTS.pick_random(), Color("3fd17a"))
+	if randf() < 0.4 or is_boss_room():
 		var cafe: Node2D = CAFE.new()
 		cafe.position = rect.get_center() + Vector2(0, 50)
 		entities.add_child(cafe)
-	if kind == "escadaria":
+	# Só o chefe libera a escada pro próximo andar.
+	if is_boss_room():
 		var st: Area2D = STAIRS.new()
 		st.position = Vector2(rect.position.x + rect.size.x * 0.75, rect.position.y + 56)
 		st.climbed.connect(func(): get_tree().call_group("level", "next_floor"))

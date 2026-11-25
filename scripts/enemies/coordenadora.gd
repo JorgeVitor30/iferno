@@ -1,5 +1,5 @@
 extends Enemy
-## Coordenadora (elite, guarda a escadaria): bem mais vida, barra de vida em cima
+## Coordenadora (elite surpresa em salas comuns): bem mais vida, barra de vida em cima
 ## e um ciclo de ataques de bullet-hell com papel:
 ##   1) anel de bolinhas de papel
 ##   2) espiral de bolinhas (3 rajadas girando)

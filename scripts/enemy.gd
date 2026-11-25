@@ -23,6 +23,7 @@ var contact_damage := true
 var drop_chance := 0.1
 var body_scale := 1.0
 var elite := false
+var boss := false # chefe do andar: barra de vida no HUD, não é empurrado por tiro
 var display_name := ""
 var lines: PackedStringArray = []
 var death_lines: PackedStringArray = []
@@ -129,7 +130,7 @@ func take_damage(amount: int = 1, dir: Vector2 = Vector2.ZERO) -> void:
 		return
 	hp -= amount
 	_flash = 0.07
-	_knock = dir * (40.0 if elite else 110.0)
+	_knock = dir * (0.0 if boss else 40.0 if elite else 110.0)
 	_squash = Vector2(1.3, 0.75)
 	Fx.burst(get_parent(), global_position + Vector2(0, -14) * body_scale, hit_color, 4, 55.0, 1.5)
 	if hp <= 0:
@@ -142,8 +143,9 @@ func _die() -> void:
 	died.emit(self)
 	_on_death()
 	var parent := get_parent()
-	Fx.shake(self, 5.0 if elite else 2.0)
-	Fx.burst(parent, global_position + Vector2(0, -14), PAPER, 18 if not elite else 40, 110.0, 2.5)
+	var big := elite or boss
+	Fx.shake(self, 10.0 if boss else 5.0 if elite else 2.0)
+	Fx.burst(parent, global_position + Vector2(0, -14), PAPER, 40 if big else 18, 140.0 if boss else 110.0, 2.5)
 	Fx.burst(parent, global_position + Vector2(0, -14), hit_color, 10, 90.0, 2.0)
 	if death_lines.size() > 0:
 		Fx.float_text(parent, global_position + Vector2(0, -34) * body_scale,

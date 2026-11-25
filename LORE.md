@@ -33,12 +33,14 @@ São **4 jogadores**, todos estudantes tentando se formar.
 | Veterano do trote | corpo a corpo, rápido | mira e investe com o balde de tinta, sujando o chão |
 | Professor | à distância | leque de provas corrigidas (com nota vermelha) |
 | Estagiário | à distância, fraco | aviõezinhos de papel que perseguem o jogador |
-| Coordenadora | elite (guarda a escadaria) | anel e espiral de bolinhas de papel, leque de provas |
+| Coordenadora | elite surpresa (aparece na última onda de uma sala sorteada) | anel e espiral de bolinhas de papel, leque de provas |
 
 ## Andares
 
-- Cada andar é gerado na hora: salas ligadas por corredores. Começa na **portaria** (onde o ônibus deixa os estudantes) e termina na **escadaria**, guardada pela coordenadora.
-- Salas: sala de aula, biblioteca, laboratório de química, cantina, sala dos professores, xerox.
+- Cada andar é gerado na hora: salas ligadas por corredores. Começa na **portaria** (onde o ônibus deixa os estudantes) e termina no **auditório**, onde está o chefe do andar.
+- **Só dá pra subir de andar depois de derrotar o chefe**: a escada aparece no auditório quando ele cai.
+- Chefe do 1º andar: **Professor de Estatística** (*provisório*: o design final ainda vai ser definido). Ataques: curva normal, amostra aleatória, desvio padrão; com metade da vida chama monitores.
+- Salas: sala de aula, biblioteca, laboratório, cantina, sala dos professores, xerox, lab. de informática, banheiro. Tamanho, móveis e decoração são sorteados (cada tipo tem 2 a 3 jeitos de arrumar).
 - Entrou numa sala com inimigos: a porta tranca com grade e fita de "interditado" até todo mundo cair.
 - Café cura 1 de vida.
 - Andar 1 = entrada da faculdade. Os de cima (bloco de aulas, biblioteca central...) ainda reaproveitam as mesmas salas, só que mais difíceis.

@@ -26,6 +26,13 @@ const KINDS := {
 	"vaso": [Vector2(14, 26), Vector2(10, 6)],
 	"bebedouro": [Vector2(12, 22), Vector2(12, 6)],
 	"armarios": [Vector2(48, 40), Vector2(48, 8)],
+	"pc": [Vector2(26, 26), Vector2(26, 8)],
+	"cabine": [Vector2(28, 42), Vector2(28, 8)],
+	"pia": [Vector2(20, 22), Vector2(20, 8)],
+	"pilar": [Vector2(20, 52), Vector2(20, 12)],
+	"lixeira": [Vector2(12, 16), Vector2(10, 6)],
+	"poltronas": [Vector2(58, 20), Vector2(58, 8)],
+	"pulpito": [Vector2(26, 30), Vector2(24, 10)],
 }
 
 var kind := "carteira"
@@ -34,7 +41,7 @@ var _seed := 0
 var _animated := false
 
 func _ready() -> void:
-	_seed = int(position.x * 7 + position.y * 13)
+	_seed = absi(int(position.x * 7 + position.y * 13))
 	_t = randf() * 5.0
 	var spec: Array = KINDS[kind]
 	var solid: Vector2 = spec[1]
@@ -44,7 +51,7 @@ func _ready() -> void:
 	col.shape = rect
 	col.position = Vector2(0, -solid.y / 2.0)
 	add_child(col)
-	_animated = kind in ["bancada", "cafeteira", "vending", "copiadora"]
+	_animated = kind in ["bancada", "cafeteira", "vending", "copiadora", "pc"]
 	set_process(_animated)
 
 ## Retângulo que ocupa visualmente (pra não nascer inimigo em cima).
@@ -192,3 +199,54 @@ func _draw() -> void:
 				for v in 3:
 					draw_rect(Rect2(x + 3, -36 + v * 2, 5, 1), c.darkened(0.35))
 				draw_rect(Rect2(x + 8, -20, 1, 3), Color("d8d8e0"))
+		"pc":
+			# mesa com monitor (tela piscando código) e teclado
+			_o(Rect2(-13, -14, 26, 6), Color("c8c8d0"))
+			_o(Rect2(-12, -8, 2, 8), METAL)
+			_o(Rect2(10, -8, 2, 8), METAL)
+			_o(Rect2(-8, -26, 16, 11), Color("2a2a38"))
+			var scr := Color("1a3a2a") if int(_t * 3.0 + _seed) % 9 != 0 else Color("3a6a8a")
+			draw_rect(Rect2(-7, -25, 14, 8), scr)
+			for l in 3:
+				var lw := 3 + (_seed + l * 5 + int(_t * 2.0)) % 8
+				draw_rect(Rect2(-6, -24 + l * 2, lw, 1), Color("3fd17a"))
+			draw_rect(Rect2(-1, -15, 2, 2), Color("2a2a38"))
+			draw_rect(Rect2(-6, -13, 12, 2), Color("4a4a58"))
+		"cabine":
+			# cabine do banheiro, porta entreaberta ou fechada
+			_o(Rect2(-14, -42, 28, 42), Color("6a9ab0"))
+			draw_rect(Rect2(-12, -38, 24, 36), Color("5a8aa0"))
+			if _seed % 3 == 0:
+				draw_rect(Rect2(-12, -38, 10, 36), Color("2a2030")) # porta aberta
+			else:
+				draw_rect(Rect2(6, -22, 3, 2), Color("d94a4a")) # ocupado
+			draw_rect(Rect2(-14, -2, 28, 2), Color("3a4a58"))
+		"pia":
+			_o(Rect2(-10, -14, 20, 6), Color("e8e8f0"))
+			draw_rect(Rect2(-7, -13, 14, 3), Color("b8c8d8"))
+			_o(Rect2(-1, -18, 2, 4), METAL)
+			_o(Rect2(-3, -8, 6, 8), Color("c8c8d0"))
+			_o(Rect2(-8, -24, 16, 6), Color("bfe3ff")) # espelho
+		"pilar":
+			_o(Rect2(-10, -52, 20, 52), Color("c8c0b4"))
+			draw_rect(Rect2(-10, -52, 20, 4), Color("e0d8cc"))
+			draw_rect(Rect2(4, -48, 6, 46), Color("a8a094"))
+			draw_rect(Rect2(-10, -4, 20, 4), Color("8a8478"))
+		"lixeira":
+			_o(Rect2(-6, -14, 12, 14), Color("3f8a5a"))
+			draw_rect(Rect2(-6, -14, 12, 2), Color("2f6a4a"))
+			draw_rect(Rect2(-3, -16, 4, 3), Color("f4efe2")) # papel saindo
+		"poltronas":
+			for i in 4:
+				var x := -29 + i * 15
+				_o(Rect2(x, -20, 13, 9), Color("8a2a3a"))
+				_o(Rect2(x, -11, 13, 7), Color("a83a4a"))
+				draw_rect(Rect2(x + 1, -19, 11, 1), Color("b84a5a"))
+			draw_rect(Rect2(-29, -4, 58, 4), Color("3a2a30"))
+		"pulpito":
+			_o(Rect2(-13, -24, 26, 6), WOOD_LIGHT)
+			_o(Rect2(-11, -18, 22, 18), WOOD)
+			draw_rect(Rect2(-9, -14, 18, 2), WOOD_DARK)
+			_o(Rect2(-2, -32, 3, 8), Color("3a3440")) # microfone
+			draw_rect(Rect2(-3, -34, 5, 3), Color("2a2a30"))
+			_o(Rect2(4, -27, 6, 3), Color("f4efe2"))

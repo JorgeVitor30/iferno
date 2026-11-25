@@ -1,15 +1,18 @@
 class_name FloorLevel
 extends Node2D
 ## Um andar da faculdade gerado na hora: salas numa grade ligadas por corredores.
-## Começa na portaria (onde o ônibus deixa o jogador), termina na escadaria
-## (a sala mais longe), guardada pela coordenadora. Subir a escada = próximo andar.
+## Começa na portaria (onde o ônibus deixa o jogador) e termina no auditório
+## (a sala mais longe), onde está o chefe. Só depois de derrotar o chefe
+## aparece a escada pro próximo andar. A coordenadora é uma elite que aparece
+## de surpresa em alguma sala comum.
 
 const CELL := Vector2(784, 560) # distância entre os centros de salas vizinhas
 const CORRIDOR_TINT := Color(0.9, 0.88, 0.84)
 const FLOOR_TEX := preload("res://assets/tilesets/floor_tile.png")
 const WALL_TEX := preload("res://assets/tilesets/wall_front.png")
 const FLOOR_NAMES := ["ENTRADA DA FACULDADE", "BLOCO DE AULAS", "BIBLIOTECA CENTRAL", "LABORATÓRIOS", "REITORIA"]
-const ROOM_POOL := ["sala_aula", "sala_aula", "sala_aula", "biblioteca", "laboratorio", "cantina", "sala_prof", "xerox"]
+const ROOM_POOL := ["sala_aula", "sala_aula", "sala_aula", "biblioteca", "laboratorio", "cantina",
+	"sala_prof", "xerox", "informatica", "banheiro"]
 const POSTERS := ["FESTA SEXTA!", "DCE", "MONITORIA", "VENDE-SE APOSTILA", "INTERCÂMBIO", "ESTÁGIO!", "CHAPA 2"]
 
 static var floor_num := 1
@@ -79,7 +82,7 @@ func _generate() -> void:
 	for c in cells:
 		var k := "hall"
 		if c == far:
-			k = "escadaria"
+			k = "auditorio" # sala do chefe
 		elif c != Vector2i.ZERO:
 			if pool.is_empty():
 				pool = ROOM_POOL.duplicate()
@@ -90,6 +93,14 @@ func _generate() -> void:
 		room.entered.connect(_on_room_entered)
 		room.cleared_room.connect(func(_r: Room): hud.refresh_map())
 		rooms[c] = room
+	# Elite (coordenadora) escondida em salas comuns sorteadas
+	var normal: Array = []
+	for c in cells:
+		if c != Vector2i.ZERO and c != far:
+			normal.append(c)
+	normal.shuffle()
+	for i in mini(1 + int(floor_num >= 3), normal.size()):
+		(rooms[normal[i]] as Room).elite_room = true
 	for l: Array in links:
 		var a: Vector2i = l[0]
 		var b: Vector2i = l[1]
@@ -108,7 +119,7 @@ func _linked(links: Array, a: Vector2i, b: Vector2i) -> bool:
 			return true
 	return false
 
-## Sala mais longe da portaria (em número de portas) vira a escadaria.
+## Sala mais longe da portaria (em número de portas) vira a sala do chefe.
 func _farthest(cells: Array[Vector2i], links: Array) -> Vector2i:
 	var dist := {Vector2i.ZERO: 0}
 	var queue: Array[Vector2i] = [Vector2i.ZERO]

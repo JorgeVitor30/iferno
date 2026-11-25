@@ -1,5 +1,5 @@
 extends Area2D
-## Escada pro próximo andar. Aparece quando a escadaria é liberada.
+## Escada pro próximo andar. Só aparece depois que o chefe do andar cai.
 ## Origem no meio da base dos degraus.
 
 signal climbed
