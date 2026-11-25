@@ -22,6 +22,12 @@ var speed := 40.0
 var contact_damage := true
 var drop_chance := 0.1
 var body_scale := 1.0
+# Tamanho "em pixels de verdade" (sem escala): bonecos grandes desenhados no tamanho nativo
+# mudam isso no _setup() em vez de usar body_scale (que borra o pixel).
+var hurt_size := Vector2(16, 30) # hurtbox (onde o tiro acerta)
+var col_radius := 5.0            # círculo do pé (bate em parede)
+var head_y := 34.0               # altura da cabeça (balão de fala, "!")
+var shadow_r := 8.0
 var elite := false
 var boss := false # chefe do andar: barra de vida no HUD, não é empurrado por tiro
 var display_name := ""
@@ -52,7 +58,7 @@ func _ready() -> void:
 	collision_layer = 4      # camada 3: inimigos
 	collision_mask = 1 | 4   # batem em parede e uns nos outros (não no jogador)
 	var c := CircleShape2D.new()
-	c.radius = 5.0 * body_scale
+	c.radius = col_radius * body_scale
 	_col.shape = c
 	add_child(_col)
 	# Hurtbox do tamanho do corpo: é nela que o tiro do jogador acerta.
@@ -62,9 +68,9 @@ func _ready() -> void:
 	_hurtbox.monitorable = false
 	var hb := CollisionShape2D.new()
 	var r := RectangleShape2D.new()
-	r.size = Vector2(16, 30) * body_scale
+	r.size = hurt_size * body_scale
 	hb.shape = r
-	hb.position = Vector2(0, -15) * body_scale
+	hb.position = Vector2(0, -hurt_size.y / 2.0) * body_scale
 	_hurtbox.add_child(hb)
 	add_child(_hurtbox)
 	player = get_tree().get_first_node_in_group("player") as Node2D
@@ -107,7 +113,7 @@ func _physics_process(delta: float) -> void:
 	velocity = want + _knock
 	move_and_slide()
 	_squash = _squash.lerp(Vector2.ONE, minf(delta * 12.0, 1.0))
-	if contact_damage and _player_ok() and to_player().length() < 12.0 * body_scale:
+	if contact_damage and _player_ok() and to_player().length() < (col_radius + 7.0) * body_scale:
 		hurt_player()
 	_bubble_cd -= delta
 	if _bubble_cd <= 0.0 and lines.size() > 0:
@@ -132,7 +138,7 @@ func take_damage(amount: int = 1, dir: Vector2 = Vector2.ZERO) -> void:
 	_flash = 0.07
 	_knock = dir * (0.0 if boss else 40.0 if elite else 110.0)
 	_squash = Vector2(1.3, 0.75)
-	Fx.burst(get_parent(), global_position + Vector2(0, -14) * body_scale, hit_color, 4, 55.0, 1.5)
+	Fx.burst(get_parent(), global_position + Vector2(0, -hurt_size.y * 0.5) * body_scale, hit_color, 4, 55.0, 1.5)
 	if hp <= 0:
 		_die()
 
@@ -148,7 +154,7 @@ func _die() -> void:
 	Fx.burst(parent, global_position + Vector2(0, -14), PAPER, 40 if big else 18, 140.0 if boss else 110.0, 2.5)
 	Fx.burst(parent, global_position + Vector2(0, -14), hit_color, 10, 90.0, 2.0)
 	if death_lines.size() > 0:
-		Fx.float_text(parent, global_position + Vector2(0, -34) * body_scale,
+		Fx.float_text(parent, global_position + Vector2(0, -head_y) * body_scale,
 			death_lines[randi() % death_lines.size()], Color("ffd966"))
 	if randf() < drop_chance:
 		var cafe: Node2D = CAFE.new()
@@ -172,7 +178,7 @@ func say(text: String) -> void:
 	l.add_theme_constant_override("outline_size", 4)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.size = Vector2(140, 12)
-	l.position = Vector2(-70, -48 * body_scale)
+	l.position = Vector2(-70, -(head_y + 14.0) * body_scale)
 	l.scale = Vector2(0.2, 0.2)
 	l.pivot_offset = Vector2(70, 12)
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -205,7 +211,7 @@ func spawn_decal(kind: String, color: Color, pos: Vector2 = position) -> void:
 func _draw() -> void:
 	# Sombra
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0, 0.45))
-	draw_circle(Vector2.ZERO, 8.0 * body_scale, Color(0, 0, 0, 0.3))
+	draw_circle(Vector2.ZERO, shadow_r * body_scale, Color(0, 0, 0, 0.3))
 	if _spawn_t > 0.0:
 		draw_set_transform(Vector2.ZERO)
 		_draw_spawn()
@@ -216,7 +222,7 @@ func _draw() -> void:
 	draw_set_transform(Vector2.ZERO)
 	_draw_overlay()
 	if alert and int(anim_t * 12.0) % 3 != 0:
-		Fx.text(self, Vector2(-3, -36 * body_scale - 4), "!", Color("ff5a4a"), 14)
+		Fx.text(self, Vector2(-3, -(head_y + 2.0) * body_scale - 4), "!", Color("ff5a4a"), 14)
 	if elite:
 		_draw_elite_bar()
 
@@ -241,7 +247,7 @@ func _draw_spawn() -> void:
 
 func _draw_elite_bar() -> void:
 	var w := 34.0
-	var y := -46.0 * body_scale
+	var y := -(head_y + 12.0) * body_scale
 	draw_rect(Rect2(-w / 2 - 1, y - 1, w + 2, 5), OUTLINE)
 	draw_rect(Rect2(-w / 2, y, w * float(hp) / max_hp, 3), Color("d94a4a"))
 	Fx.text(self, Vector2(-w / 2 - 20, y - 3), display_name, Color("ffd966"), 8, w + 40, HORIZONTAL_ALIGNMENT_CENTER)

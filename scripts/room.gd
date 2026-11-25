@@ -679,7 +679,8 @@ func _spawn_wave(i: int) -> void:
 		e.floor_level = floor_level
 		e.position = _spawn_point(player)
 		if t == "prof_estatistica":
-			e.position = Vector2(rect.get_center().x, rect.position.y + 64) # no palco
+			e.position = Vector2(rect.get_center().x, rect.position.y + 100) # no palco
+			e.set("arena", rect)
 		e.died.connect(_on_enemy_died)
 		entities.add_child(e)
 		_alive += 1

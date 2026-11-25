@@ -39,7 +39,9 @@ São **4 jogadores**, todos estudantes tentando se formar.
 
 - Cada andar é gerado na hora: salas ligadas por corredores. Começa na **portaria** (onde o ônibus deixa os estudantes) e termina no **auditório**, onde está o chefe do andar.
 - **Só dá pra subir de andar depois de derrotar o chefe**: a escada aparece no auditório quando ele cai.
-- Chefe do 1º andar: **Professor de Estatística** (*provisório*: o design final ainda vai ser definido). Ataques: curva normal, amostra aleatória, desvio padrão; com metade da vida chama monitores.
+- Chefe do 1º andar: **Professor de Estatística**. Topete, óculos redondos enormes, bigodão, gravata borboleta, suspensório; quase 3x o tamanho de um estudante. Muita vida, 3 fases (66%: chama monitores; 33%: fica furioso e emenda golpes).
+  - Golpes: *y = log(x)* (giz em curvas logarítmicas), *curva normal* (leque de provas em sino), *calculadora* (explode em números), *histograma* (barras sobem do chão, sempre com uma brecha), *dispersão* (pontos caem do gráfico), *regressão linear* (avisa com uma reta e dispara por ela), *desvio padrão* (anéis), *amostra aleatória* (rajada), *SILÊNCIO!!* (se você fica colado nele).
+  - Mira onde o jogador vai estar e escolhe o golpe pela distância, mas sempre avisa antes e para pra limpar os óculos de vez em quando.
 - Salas: sala de aula, biblioteca, laboratório, cantina, sala dos professores, xerox, lab. de informática, banheiro. Tamanho, móveis e decoração são sorteados (cada tipo tem 2 a 3 jeitos de arrumar).
 - Entrou numa sala com inimigos: a porta tranca com grade e fita de "interditado" até todo mundo cair.
 - Café cura 1 de vida.
