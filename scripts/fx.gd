@@ -109,7 +109,47 @@ static func glow(parent: Node, pos: Vector2, radius: float, color: Color, streng
 	s.material = m
 	s.z_index = 1
 	parent.add_child(s)
+	# luz de verdade em volta (o andar tem um CanvasModulate escurecendo tudo)
+	var l := PointLight2D.new()
+	l.texture = light_texture()
+	l.texture_scale = radius * 3.0 / 128.0
+	l.color = color
+	l.energy = 0.9 * strength
+	l.position = pos
+	parent.add_child(l)
 	return s
+
+static var _light_tex: Texture2D
+
+## Textura de luz suave (bordas em degraus pra combinar com pixel art).
+static func light_texture() -> Texture2D:
+	if _light_tex == null:
+		var g := Gradient.new()
+		g.interpolation_mode = Gradient.GRADIENT_INTERPOLATE_LINEAR
+		g.offsets = PackedFloat32Array([0.0, 0.25, 0.45, 0.65, 0.85])
+		g.colors = PackedColorArray([Color(1, 1, 1, 1), Color(1, 1, 1, 0.75), Color(1, 1, 1, 0.5), Color(1, 1, 1, 0.25), Color(1, 1, 1, 0)])
+		var t := GradientTexture2D.new()
+		t.gradient = g
+		t.fill = GradientTexture2D.FILL_RADIAL
+		t.fill_from = Vector2(0.5, 0.5)
+		t.fill_to = Vector2(1.0, 0.5)
+		t.width = 128
+		t.height = 128
+		_light_tex = t
+	return _light_tex
+
+## Escurece a cena (o HUD não é afetado) e põe uma luz seguindo o jogador.
+static func setup_lighting(scene: Node, player: Node2D, ambient: Color) -> void:
+	var cm := CanvasModulate.new()
+	cm.color = ambient
+	scene.add_child(cm)
+	var l := PointLight2D.new()
+	l.texture = light_texture()
+	l.texture_scale = 3.2
+	l.color = Color(1.0, 0.93, 0.85)
+	l.energy = 0.75
+	l.position = Vector2(0, -12)
+	player.add_child(l)
 
 ## Chão/parede repetindo uma textura de pixel grosso (desenhada em escala ART).
 static func tiled(parent: Node, tex: Texture2D, r: Rect2, tint: Color = Color.WHITE) -> Sprite2D:
@@ -118,8 +158,7 @@ static func tiled(parent: Node, tex: Texture2D, r: Rect2, tint: Color = Color.WH
 	s.centered = false
 	s.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 	s.region_enabled = true
-	s.region_rect = Rect2(Vector2.ZERO, r.size / ART)
-	s.scale = Vector2(ART, ART)
+	s.region_rect = Rect2(Vector2.ZERO, r.size) # tiles em 1x (pixel nítido)
 	s.position = r.position
 	s.modulate = tint
 	parent.add_child(s)

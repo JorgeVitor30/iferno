@@ -8,27 +8,27 @@ const WALL_TEX := preload("res://assets/tilesets/clean/wall.png")
 const PROP := preload("res://scripts/prop.gd")
 const RUN_SCENE := "res://scenes/floor.tscn" # 1º andar: entrada da faculdade
 
-const ROOM := Rect2(24, 72, 912, 448)  # área de chão andável (maior que a tela: a câmera segue o jogador)
-const WALL_FACE_H := 64.0              # fachada do prédio (2 fileiras do tile de parede)
+const ROOM := Rect2(24, 112, 912, 408)  # área de chão andável (maior que a tela: a câmera segue o jogador)
+const WALL_FACE_H := 96.0              # fachada alta do prédio (2 tiles de parede de 48)
 const CAP := 8.0                       # espessura do topo escuro das paredes
 const CAP_COLOR := Color("150b1f")
-const ROAD := Rect2(24, 104, 912, 64)  # rua onde o ônibus para
+const ROAD := Rect2(24, 144, 912, 64)  # rua onde o ônibus para
 
 # Objetos de cenário (tipos de prop.gd) e a posição da base (onde encosta no chão).
 const PROPS := [
-	["arvore", Vector2(110, 230)],
-	["arvore", Vector2(850, 230)],
+	["arvore", Vector2(110, 270)],
+	["arvore", Vector2(850, 270)],
 	["arvore", Vector2(80, 430)],
 	["arvore", Vector2(880, 430)],
-	["poste", Vector2(330, 196)],
-	["poste", Vector2(630, 196)],
-	["lixeira", Vector2(660, 200)],
+	["poste", Vector2(330, 236)],
+	["poste", Vector2(630, 236)],
+	["lixeira", Vector2(660, 240)],
 	["mesa_piquenique", Vector2(250, 340)],
 	["mesa_piquenique", Vector2(710, 340)],
 	["banco", Vector2(230, 460)],
 	["banco", Vector2(730, 460)],
-	["vaso", Vector2(420, 200)],
-	["vaso", Vector2(540, 200)],
+	["vaso", Vector2(420, 240)],
+	["vaso", Vector2(540, 240)],
 ]
 const FENCE_Y := 505.0     # cerca embaixo, com uma abertura no meio
 const FENCE_GAP := 96.0
@@ -45,6 +45,8 @@ func _ready() -> void:
 	player.health_changed.connect($HUD/HealthBar.set_health)
 	$HUD/HealthBar.set_health(player.hp, player.max_hp)
 	$Entities/Bus.boarded.connect(_on_bus_boarded)
+	$Entities/Bus.position = Vector2(480, 190) # na rua
+	Fx.setup_lighting(self, player, Color(0.55, 0.55, 0.72)) # noite
 
 	_add_background()
 	var floor_spr := Fx.tiled(self, FLOOR_TEX, ROOM)
@@ -119,17 +121,20 @@ func _add_scenery() -> void:
 		var x := ROOM.position.x + 40
 		while x < ROOM.end.x - 40:
 			var lit := (i * 7) % 5 != 0
-			var win := Rect2(x, top + 10, 24, 18)
-			facade.draw_rect(win.grow(2), Fx.OUTLINE)
-			facade.draw_rect(win, Color("f0c878") if lit else Color("2a2440"))
-			if lit:
-				facade.draw_rect(Rect2(win.position.x, win.position.y, 24, 2), Color("fce6bd"))
-				facade.draw_rect(Rect2(win.position.x + 10, win.position.y, 2, 18), Color("c89a58"))
+			for wy in [top + 10, top + 52]:
+				var lit2 := lit if wy == top + 10 else (i * 3) % 4 != 0
+				var win := Rect2(x, wy, 24, 22)
+				facade.draw_rect(win.grow(2), Fx.OUTLINE)
+				facade.draw_rect(win, Color("f0c878") if lit2 else Color("2a2440"))
+				if lit2:
+					facade.draw_rect(Rect2(win.position.x, win.position.y, 24, 2), Color("fce6bd"))
+					facade.draw_rect(Rect2(win.position.x + 11, win.position.y, 2, 22), Color("c89a58"))
+				facade.draw_rect(Rect2(win.position.x - 2, win.end.y + 2, 28, 2), Color("56476b")) # peitoril
 			x += 64
 			i += 1
 		# placa da faculdade no meio
 		var c := ROOM.get_center().x
-		var sign := Rect2(c - 60, top + 36, 120, 18)
+		var sign := Rect2(c - 60, top + 34, 120, 16)
 		facade.draw_rect(sign.grow(2), Fx.OUTLINE)
 		facade.draw_rect(sign, Color("2a1f38"))
 		Fx.text(facade, Vector2(sign.position.x, sign.position.y + 13), "FACULDADE IFERNO", Color("ffd966"), 11, sign.size.x, HORIZONTAL_ALIGNMENT_CENTER))
@@ -140,6 +145,7 @@ func _add_scenery() -> void:
 	while x2 < ROOM.end.x - 40:
 		if (j * 7) % 5 != 0:
 			Fx.glow(self, Vector2(x2, ROOM.position.y - WALL_FACE_H + 22), 22.0, Color("ffb060"), 0.35)
+			Fx.glow(self, Vector2(x2, ROOM.position.y - WALL_FACE_H + 64), 22.0, Color("ffb060"), 0.3)
 		x2 += 64
 		j += 1
 

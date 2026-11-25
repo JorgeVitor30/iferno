@@ -160,5 +160,40 @@
     "file": "assets/props/raw/lamp.png",
     "sha12": "91840aafea8a",
     "label": "poste"
+  },
+  {
+    "asset_id": "763a9128-f58a-464f-b554-d11644ecd4da",
+    "file": "assets/sprites/student2/raw/base.png",
+    "label": "estudante novo base (top-down, estilo clean)"
+  },
+  {
+    "asset_id": "78854cd7-8e26-4c58-91e5-76c9de2f8b05",
+    "file": "assets/sprites/student2/raw/idle_s.png",
+    "label": "estudante novo idle frente"
+  },
+  {
+    "asset_id": "d56ff4e5-53bf-44c8-8df9-acaca7aeea1c",
+    "file": "assets/sprites/student2/raw/walk_s.png",
+    "label": "estudante novo andar frente"
+  },
+  {
+    "asset_id": "2d3e655e-3e36-4586-b532-41c49b808936",
+    "file": "assets/sprites/student2/raw/idle_n.png",
+    "label": "estudante novo idle costas"
+  },
+  {
+    "asset_id": "3aaff281-ee91-4f0c-afc6-c634fec17189",
+    "file": "assets/sprites/student2/raw/walk_n.png",
+    "label": "estudante novo andar costas"
+  },
+  {
+    "asset_id": "4b186c7f-52fb-4101-8402-6ec2c406464d",
+    "file": "assets/sprites/student2/raw/idle_e.png",
+    "label": "estudante novo idle lado direito"
+  },
+  {
+    "asset_id": "a8881b62-35c5-46fc-8696-1877e7af95ae",
+    "file": "assets/sprites/student2/raw/walk_e.png",
+    "label": "estudante novo andar lado direito"
   }
 ]

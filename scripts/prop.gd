@@ -98,26 +98,38 @@ func _process(delta: float) -> void:
 
 # ---------------------------------------------------------------- pincéis (em unidades de arte)
 
-## Bloco: contorno + cor + luz em cima + sombra embaixo.
+## Bloco com volume (2.5D): contorno fino de 1px, topo iluminado, lado direito
+## na sombra, quina esquerda pegando luz e base escura (luz vem de cima/esquerda).
 func _b(x: float, y: float, w: float, h: float, c: Color, light: bool = true) -> void:
-	draw_rect(Rect2(x - 1, y - 1, w + 2, h + 2), OUT)
+	draw_rect(Rect2(x - 0.5, y - 0.5, w + 1, h + 1), OUT)
 	draw_rect(Rect2(x, y, w, h), c)
 	if light and h >= 2:
-		draw_rect(Rect2(x, y, w, 1), c.lightened(0.18))
+		draw_rect(Rect2(x, y, w, 1), c.lightened(0.22))
+		draw_rect(Rect2(x, y + 1, w, 0.5), c.lightened(0.1))
+	if w >= 3 and h >= 2:
+		draw_rect(Rect2(x + w - 1, y + (1 if light else 0), 1, h - (1 if light else 0)), c.darkened(0.25))
+		draw_rect(Rect2(x, y, 0.5, h), c.lightened(0.12))
 	if h >= 3:
-		draw_rect(Rect2(x, y + h - 1, w, 1), c.darkened(0.3))
+		draw_rect(Rect2(x, y + h - 1, w, 1), c.darkened(0.35))
 
 ## Retângulo chapado (sem contorno).
 func _f(x: float, y: float, w: float, h: float, c: Color) -> void:
 	draw_rect(Rect2(x, y, w, h), c)
 
-func _shadow(w: float) -> void:
-	draw_rect(Rect2(-w / 2.0 + 0.5, -1, w, 2), Color(0, 0, 0, 0.35))
+## Sombra no chão: escurecido na base + sombra projetada pra direita/baixo
+## (proporcional à altura do objeto), que é o que dá a sensação de volume.
+func _shadow(w: float, h: float = 8.0) -> void:
+	var len := clampf(h * 0.35, 2.0, 9.0)
+	var x0 := -w / 2.0
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(x0 + 1, -1), Vector2(x0 + w, -1),
+		Vector2(x0 + w + len, len * 0.45), Vector2(x0 + 1 + len, len * 0.45)]), Color(0, 0, 0, 0.3))
+	draw_rect(Rect2(x0, -1.5, w, 2), Color(0, 0, 0, 0.35))
 
 func _draw() -> void:
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(A, A))
 	var s: Vector2 = KINDS[kind][0] / A
-	_shadow(s.x)
+	_shadow(s.x, s.y)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = _seed
 	var blink := int(_t * 3.0) % 2 == 0

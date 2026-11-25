@@ -45,6 +45,7 @@ func _ready() -> void:
 	_last_hp = player.hp
 	player.health_changed.connect(_on_health_changed)
 	player.died.connect(_on_player_died)
+	Fx.setup_lighting(self, player, Color(0.62, 0.58, 0.74))
 	hud.setup(self)
 	hud.set_health(player.hp, player.max_hp)
 	_on_room_entered(hall)
@@ -174,6 +175,10 @@ func _build_corridor(a: Room, b: Room) -> void:
 	n.draw.connect(func(): n.draw_rect(caps, Room.CAP_COLOR))
 	add_child(n)
 	_tiled(n, FLOOR_TEX, floor_r, CORRIDOR_TINT)
+	var ao := Node2D.new()
+	var horizontal := a.grid.y == b.grid.y
+	ao.draw.connect(func(): Room.draw_wall_shadow(ao, floor_r, horizontal, not horizontal))
+	n.add_child(ao)
 	if face_r.size.x > 0.0:
 		_tiled(n, WALL_TEX, face_r, Color(0.9, 0.9, 0.95))
 		if face_r.size.x > 120.0 and randf() < 0.7:

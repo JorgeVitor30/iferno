@@ -259,7 +259,7 @@ func is_moving() -> bool:
 
 ## --- pincéis em unidades de arte (dentro de _draw_body) ---
 func ob(x: float, y: float, w: float, h: float) -> void:
-	draw_rect(Rect2(x - 1, y - 1, w + 2, h + 2), Fx.OUTLINE)
+	draw_rect(Rect2(x - 0.5, y - 0.5, w + 1, h + 1), Fx.OUTLINE) # contorno fino (1px)
 
 func fb(x: float, y: float, w: float, h: float, c: Color) -> void:
 	draw_rect(Rect2(x, y, w, h), c)

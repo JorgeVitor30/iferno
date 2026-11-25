@@ -2,7 +2,6 @@ extends CharacterBody2D
 ## Jogador: WASD anda, mouse mira, botão esquerdo atira, espaço/botão direito = dodge roll.
 
 const BULLET := preload("res://scenes/bullet.tscn")
-const BODY := preload("res://scripts/player_body.gd")
 
 signal health_changed(hp: int, max_hp: int)
 signal died
@@ -31,16 +30,18 @@ const SPRITE_Y := 2.0 # pé do sprite (pivô da gingada)
 # 8 direções a partir de 5 vistas desenhadas; as da esquerda espelham as da direita.
 # Índice = ângulo do mouse em fatias de 45°, começando na direita e girando no sentido horário.
 const CELL := Vector2i(48, 48) # tamanho de cada quadro (ver tools/build_student_sheets.py)
-const VIEWS := ["s", "se", "e", "ne", "n"]
+# Estudante novo (SpriteCook top-down): vistas de frente (s), costas (n) e lado (e);
+# a esquerda espelha a direita e as diagonais usam a vista de lado.
+const VIEWS := ["s", "e", "n"]
 const DIR_TO_VIEW := [
-	["e", false], ["se", false], ["s", false], ["se", true],
-	["e", true], ["ne", true], ["n", false], ["ne", false],
+	["e", false], ["e", false], ["s", false], ["e", true],
+	["e", true], ["e", true], ["n", false], ["e", false],
 ]
+const SPRITE_DIR := "res://assets/sprites/student2"
 const ANIM_FPS := {"idle": 8.0, "walk": 12.0, "roll": 20.0}
 const ANIM_LOOP := {"idle": true, "walk": true, "roll": false}
 
 var _view := "s"
-var _body: Node2D
 
 func _ready() -> void:
 	add_to_group("player")
@@ -51,14 +52,8 @@ func _ready() -> void:
 	health_changed.emit(hp, max_hp)
 	$Sprite2D.sprite_frames = _build_frames()
 	$Sprite2D.play("idle_s")
-	# Estilo clean: o boneco agora é desenhado (player_body.gd). O sprite antigo do
-	# SpriteCook continua no projeto, só fica invisível; o desenho é filho dele pra
-	# herdar o pulinho do dodge e as piscadas de dano.
-	$Sprite2D.self_modulate = Color(1, 1, 1, 0)
-	_body = BODY.new()
-	_body.position = Vector2(0, -SPRITE_Y)
-	$Sprite2D.add_child(_body)
-	$Gun.visible = false
+	$Gun.default_color = Color("3a3848")
+	$Gun.width = 3.0
 	$Dust.color = Color(0.55, 0.5, 0.65, 0.8)
 
 ## Monta as animações idle_<vista> e walk_<vista> a partir das folhas em assets/sprites/student/.
@@ -68,7 +63,7 @@ func _build_frames() -> SpriteFrames:
 	for kind in ANIM_FPS:
 		for view in VIEWS:
 			var anim := "%s_%s" % [kind, view]
-			var path := "res://assets/sprites/student/%s.png" % anim
+			var path := "%s/%s.png" % [SPRITE_DIR, anim]
 			if not ResourceLoader.exists(path):
 				continue # vista ainda não gerada: _start_roll_anim() cai no andar
 			var tex: Texture2D = load(path)
@@ -154,7 +149,7 @@ func _process(delta: float) -> void:
 		_update_blink()
 		return
 	spr.position.y = SPRITE_Y
-	$Gun.visible = false
+	$Gun.visible = true
 	# Olha pro mouse: escolhe a mais próxima das 8 direções.
 	var dir := _dir_index(aim)
 	_view = DIR_TO_VIEW[dir][0]
@@ -177,8 +172,6 @@ func _process(delta: float) -> void:
 		spr.speed_scale = 1.0
 	# Arma atrás do corpo quando mira pra cima.
 	$Gun.z_index = -1 if aim.y < -0.3 else 0
-	_body.view = _view
-	_body.flip = spr.flip_h
 	$Dust.emitting = moving
 	_update_blink()
 	# "Arma" placeholder: linha saindo da altura da mão.

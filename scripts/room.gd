@@ -23,7 +23,7 @@ const ENEMIES := {
 }
 const COST := {"estagiario": 2, "zelador": 2, "veterano": 3, "professor": 3, "coordenadora": 8}
 
-const FACE := 32.0   # altura da face da parede de cima (16px de arte x2)
+const FACE := 48.0   # altura da face da parede de cima (parede alta = profundidade)
 const CAP := 8.0     # espessura do topo escuro das paredes
 const DOOR_W := 48.0 # largura dos vãos de porta e corredores
 const CAP_COLOR := Color("150b1f")
@@ -431,9 +431,22 @@ func _furnish(cx: float, cy: float) -> void:
 
 # ---------------------------------------------------------------- decoração desenhada
 
+## Sombra das paredes no chão (dá a sensação de altura/profundidade).
+static func draw_wall_shadow(n: CanvasItem, r: Rect2, top: bool = true, sides: bool = true) -> void:
+	if top:
+		n.draw_rect(Rect2(r.position.x, r.position.y, r.size.x, 6), Color(0, 0, 0, 0.32))
+		n.draw_rect(Rect2(r.position.x, r.position.y + 6, r.size.x, 6), Color(0, 0, 0, 0.2))
+		n.draw_rect(Rect2(r.position.x, r.position.y + 12, r.size.x, 6), Color(0, 0, 0, 0.1))
+	if sides:
+		n.draw_rect(Rect2(r.position.x, r.position.y, 4, r.size.y), Color(0, 0, 0, 0.25))
+		n.draw_rect(Rect2(r.position.x + 4, r.position.y, 4, r.size.y), Color(0, 0, 0, 0.12))
+		n.draw_rect(Rect2(r.end.x - 4, r.position.y, 4, r.size.y), Color(0, 0, 0, 0.3))
+		n.draw_rect(Rect2(r.end.x - 8, r.position.y, 4, r.size.y), Color(0, 0, 0, 0.15))
+
 func _draw_floor_decor(n: Node2D) -> void:
 	var r := rect
 	var c := r.get_center()
+	draw_wall_shadow(n, r)
 	if _rug and kind in ["biblioteca", "sala_prof", "sala_aula", "xerox"]:
 		var rug := Rect2(c.x - 70, c.y - 46, 140, 92)
 		var hue := fmod(float(grid.x * 37 + grid.y * 91) / 100.0, 1.0)
