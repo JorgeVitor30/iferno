@@ -13,6 +13,7 @@ const PROP := preload("res://scripts/prop.gd")
 const DOOR := preload("res://scripts/door.gd")
 const STAIRS := preload("res://scripts/stairs.gd")
 const CAFE := preload("res://scripts/cafe.gd")
+const CHEST := preload("res://scripts/chest.gd")
 const ENEMIES := {
 	"zelador": preload("res://scripts/enemies/zelador.gd"),
 	"veterano": preload("res://scripts/enemies/veterano.gd"),
@@ -28,7 +29,7 @@ const CAP := 8.0     # espessura do topo escuro das paredes
 const DOOR_W := 48.0 # largura dos vãos de porta e corredores
 const CAP_COLOR := Color("150b1f")
 const OUTLINE := Color("0b0612")
-const MIN_SIZE := Vector2(496, 336)
+const MIN_SIZE := Vector2(384, 272)
 const MAX_SIZE := Vector2(832, 512) # cabe na célula do andar com corredor sobrando
 
 ## Tipos de sala: tamanho base (sorteado em volta disso), cor do piso,
@@ -60,6 +61,9 @@ const KINDS := {
 	"banheiro": {"size": Vector2(544, 352), "tint": Color(0.86, 1.02, 1.06),
 		"pool": ["zelador", "zelador", "veterano", "estagiario"],
 		"lock": "INTERDITADO PRA LIMPEZA!"},
+	"desafio": {"size": Vector2(672, 448), "tint": Color(1.1, 0.86, 0.86),
+		"pool": ["estagiario", "zelador", "veterano", "professor"],
+		"lock": "PROVA SURPRESA!\n5 RODADAS"},
 	"auditorio": {"size": Vector2(832, 496), "tint": Color(0.92, 0.86, 1.0),
 		"pool": [], "lock": "PROVA FINAL!"},
 }
@@ -71,6 +75,8 @@ const CLEAR_TEXTS := ["AULA DISPENSADA!", "APROVADO!", "PASSOU RASPANDO!", "MAT�
 
 var grid := Vector2i.ZERO
 var kind := "sala_aula"
+var size_class := "media"    # pequena / media / grande (muda o tamanho e quantos inimigos)
+const CHALLENGE_WAVES := 5
 var rect := Rect2()          # chão andável
 var sides: Array[Vector2i] = [] # lados com porta
 var title := ""
@@ -97,9 +103,18 @@ func setup(g: Vector2i, k: String, center: Vector2, lvl: int, ents: Node2D) -> v
 	floor_level = lvl
 	entities = ents
 	var size: Vector2 = KINDS[k]["size"]
-	if k != "auditorio" and k != "hall":
-		# Tamanho sorteado em passos de 32px em volta do tamanho base
-		size += Vector2(randi_range(-3, 3), randi_range(-2, 2)) * 32.0
+	if k not in ["auditorio", "hall", "desafio"]:
+		# Pequena, média ou grande; depois um sorteio em passos de 32px em volta disso
+		var roll := randf()
+		var mult := 1.0
+		if roll < 0.35:
+			size_class = "pequena"
+			mult = 0.7
+		elif roll > 0.75:
+			size_class = "grande"
+			mult = 1.2
+		size = size * mult + Vector2(randi_range(-2, 2), randi_range(-1, 1)) * 32.0
+		size = (size / 32.0).round() * 32.0
 		size = size.clamp(MIN_SIZE, MAX_SIZE)
 	# Sem arredondar: o centro do chão tem que bater com o centro da célula,
 	# senão as portas de salas vizinhas não ficam alinhadas com o corredor.
@@ -115,11 +130,15 @@ func setup(g: Vector2i, k: String, center: Vector2, lvl: int, ents: Node2D) -> v
 		"informatica": title = "LAB. DE INFORMÁTICA %d" % randi_range(1, 4)
 		"banheiro": title = ["BANHEIRO MASCULINO", "BANHEIRO FEMININO"].pick_random()
 		"auditorio": title = "AUDITÓRIO · ESTATÍSTICA"
+		"desafio": title = "SALA DE PROVA SURPRESA"
 	_board_text = BOARD_TEXTS.pick_random()
 	_clearing = randf_range(60.0, 100.0)
 	_swap = randf() < 0.5
 	_rug = randf() < 0.5
 	cleared = k == "hall"
+
+func is_challenge() -> bool:
+	return kind == "desafio"
 
 func is_boss_room() -> bool:
 	return kind == "auditorio"
@@ -461,6 +480,13 @@ func _furnish(cx: float, cy: float) -> void:
 				d.position = Vector2(randf_range(L + 20, R - 20), randf_range(T + 90, B - 50))
 				entities.add_child(d)
 			_corners(["lixeira"], 1)
+		"desafio":
+			# arena: quase vazia, só uns pilares pra se esconder dos tiros
+			_prop("pilar", Vector2(cx - 170, cy - 40), true)
+			_prop("pilar", Vector2(cx + 170, cy - 40), true)
+			_prop("pilar", Vector2(cx - 170, cy + 110), true)
+			_prop("pilar", Vector2(cx + 170, cy + 110), true)
+			_corners(["lixeira"], 2)
 		"auditorio":
 			# Palco em cima (o chefe fica lá), plateia embaixo com corredores entre as fileiras
 			_prop("pulpito", Vector2(cx + (110 if _swap else -110), T + 80))
@@ -472,7 +498,7 @@ func _furnish(cx: float, cy: float) -> void:
 			_prop("pilar", Vector2(L + 40, cy + 20), true)
 			_prop("pilar", Vector2(R - 40, cy + 20), true)
 	# Pilar no meio em salas grandes (cobertura extra pra desviar de tiro)
-	if kind not in ["hall", "auditorio", "banheiro"] and r.size.x >= 700 and randf() < 0.4:
+	if kind not in ["hall", "auditorio", "banheiro", "desafio"] and r.size.x >= 700 and randf() < 0.4:
 		_prop("pilar", Vector2(cx + randf_range(-220, 220), cy + randf_range(-60, 100)))
 
 # ---------------------------------------------------------------- decoração desenhada
@@ -509,6 +535,14 @@ func _draw_floor_decor(n: Node2D) -> void:
 			Fx.text(n, Vector2(c.x - 30, r.end.y - 5), "BEM-VINDO", Color("c8b8a0"), 7, 60, HORIZONTAL_ALIGNMENT_CENTER)
 		"laboratorio":
 			_stripes(n, c.y + (30 if _swap else -40))
+		"desafio":
+			# faixa de perigo em volta da arena e um "X" no meio (onde o baú aparece)
+			_stripes(n, r.position.y + 70)
+			_stripes(n, r.end.y - 16)
+			var red := Color(0.9, 0.2, 0.2, 0.25)
+			for i in 9:
+				n.draw_rect(Rect2(c.x - 19 + i * 4, c.y - 2 + i * 4, 6, 6), red)
+				n.draw_rect(Rect2(c.x + 13 - i * 4, c.y - 2 + i * 4, 6, 6), red)
 		"banheiro":
 			# azulejo xadrez
 			var y := r.position.y
@@ -550,6 +584,9 @@ func _draw_wall_decor(n: Node2D) -> void:
 	var mid := r.get_center().x
 	var center_free := not has_side(Vector2i.UP)
 	match kind:
+		"desafio":
+			_banner(n, mid if center_free else left, fy, "PROVA SURPRESA - SEM CONSULTA")
+			_hazard(n, right, fy)
 		"hall":
 			_banner(n, mid if center_free else left, fy, "BEM-VINDO, CALOURO!")
 			_clock(n, right, fy)
@@ -682,8 +719,16 @@ func _plan_waves() -> void:
 		_waves.append(["prof_estatistica"])
 		return
 	var pool: Array = KINDS[kind]["pool"]
+	if is_challenge():
+		# 5 rodadas, cada uma um pouco mais pesada; na última, uma elite.
+		for w in CHALLENGE_WAVES:
+			_waves.append(_make_wave(pool, 7 + floor_level * 2 + w * 2))
+		(_waves[CHALLENGE_WAVES - 1] as Array).append("coordenadora")
+		return
 	# Orçamento de "custo" de inimigos: andar 1 dá ~5-6 inimigos em 1 a 3 ondas.
+	# Sala pequena vem com menos gente, grande com mais.
 	var budget := 9 + floor_level * 3 + randi_range(0, 4)
+	budget = roundi(budget * {"pequena": 0.65, "media": 1.0, "grande": 1.3}[size_class])
 	var n_waves := 1 if budget < 10 else randi_range(2, 3 if budget >= 14 else 2)
 	var left := budget
 	for w in n_waves:
@@ -741,6 +786,8 @@ func _spawn_wave(i: int) -> void:
 		if e.boss:
 			get_tree().call_group("hud", "show_boss", e)
 	_update_counter()
+	if is_challenge() and i > 0:
+		get_tree().call_group("hud", "banner", "RODADA %d/%d" % [i + 1, _waves.size()], Color("ffb04a"), 0.6)
 
 func _spawn_point(player: Node2D) -> Vector2:
 	var inner := rect.grow(-28)
@@ -766,6 +813,10 @@ func _remaining() -> int:
 	return n
 
 func _update_counter() -> void:
+	if is_challenge():
+		get_tree().call_group("hud", "set_counter_text",
+			"RODADA %d/%d  ·  INIMIGOS: %d" % [_wave + 1, _waves.size(), _alive])
+		return
 	get_tree().call_group("hud", "set_counter", _remaining())
 
 func _on_enemy_died(_e: Enemy) -> void:
@@ -785,14 +836,19 @@ func _clear() -> void:
 	for d in _doors:
 		d.open()
 	get_tree().call_group("hud", "set_counter", -1)
-	if is_boss_room():
+	if is_challenge():
+		get_tree().call_group("hud", "banner", "PROVA SURPRESA: NOTA 10!\nABRA O BAÚ", Color("ffd966"), 2.0)
+		var chest: Node2D = CHEST.new()
+		chest.position = rect.get_center() + Vector2(0, 20)
+		entities.call_deferred("add_child", chest)
+	elif is_boss_room():
 		get_tree().call_group("hud", "banner", "APROVADO EM ESTATÍSTICA!
 A ESCADA ESTÁ LIBERADA", Color("3fd17a"), 2.0)
 	else:
 		get_tree().call_group("hud", "banner", CLEAR_TEXTS.pick_random(), Color("3fd17a"))
-	if randf() < 0.4 or is_boss_room():
+	if randf() < 0.4 or is_boss_room() or is_challenge():
 		var cafe: Node2D = CAFE.new()
-		cafe.position = rect.get_center() + Vector2(0, 50)
+		cafe.position = rect.get_center() + Vector2(0, 70)
 		entities.call_deferred("add_child", cafe)
 	# Só o chefe libera a escada pro próximo andar.
 	if is_boss_room():

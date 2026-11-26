@@ -2,7 +2,7 @@ extends Control
 ## Minimapa no canto de cima à direita, num painel com moldura.
 ## Mostra as salas visitadas e as vizinhas (vistas pela porta, com "?").
 ## Cores: amarelo = onde você está, vermelho = ainda tem inimigo, claro = liberada.
-## Ícones: porta na portaria, caveira na sala do chefe.
+## Ícones: porta na portaria, caveira na sala do chefe, triângulo de perigo na sala de desafio.
 
 const CELL := Vector2(14, 10)
 const GAP := 5.0
@@ -73,7 +73,9 @@ func _draw() -> void:
 		draw_rect(Rect2(rect.position, Vector2(rect.size.x, 1)), col.lightened(0.35))  # brilho em cima
 		draw_rect(Rect2(rect.position.x, rect.end.y - 2, rect.size.x, 2), col.darkened(0.3)) # sombra embaixo
 		var mid := rect.get_center().floor()
-		if not r.visited:
+		if r.is_challenge() and not r.cleared:
+			_trap(mid, blink or r.visited) # sala de prova surpresa: aparece mesmo sem visitar
+		elif not r.visited:
 			Fx.text(self, Vector2(rect.position.x, rect.end.y - 2), "?", Color("a898b8"), 8, rect.size.x, HORIZONTAL_ALIGNMENT_CENTER)
 		elif r.kind == "hall":
 			draw_rect(Rect2(mid + Vector2(-2, -3), Vector2(4, 6)), OUTLINE) # porta
@@ -85,8 +87,18 @@ func _draw() -> void:
 			draw_rect(Rect2(mid + Vector2(-2, -2), Vector2(4, 4)), OUTLINE)
 			draw_rect(Rect2(mid + Vector2(-1, -1), Vector2(2, 2)), Color.WHITE)
 	# nome do andar no topo do painel
-	Fx.text(self, panel.position + Vector2(0, 11), "%dº ANDAR" % level.floor_num, FRAME, 7,
-		panel.size.x, HORIZONTAL_ALIGNMENT_CENTER)
+	Fx.ui_text(self, panel.position + Vector2(0, 11), "%dº ANDAR" % level.floor_num, FRAME, 8,
+		panel.size.x, HORIZONTAL_ALIGNMENT_CENTER, "bold")
+
+## Ícone de armadilha: triângulo de perigo laranja com "!".
+func _trap(mid: Vector2, bright: bool) -> void:
+	var c := Color("ffb04a") if bright else Color("c07a2a")
+	for i in 5:
+		draw_rect(Rect2(mid + Vector2(-i - 1, -3 + i), Vector2(i * 2 + 2, 1)), OUTLINE)
+	for i in 4:
+		draw_rect(Rect2(mid + Vector2(-i, -2 + i), Vector2(i * 2, 1)), c)
+	draw_rect(Rect2(mid + Vector2(-5, 2), Vector2(10, 1)), OUTLINE)
+	draw_rect(Rect2(mid + Vector2(0, -1), Vector2(1, 1)), OUTLINE)
 
 ## Painel com moldura dupla e cantinhos (pra combinar com os corações).
 func _draw_panel(r: Rect2) -> void:
@@ -110,7 +122,7 @@ func _skull(c: Vector2, lit: bool) -> void:
 	draw_rect(Rect2(c + Vector2(1, -2), Vector2(1, 2)), OUTLINE)
 
 func _known(r: Room, rooms: Dictionary) -> bool:
-	if r.visited:
+	if r.visited or r.is_challenge(): # a sala de desafio aparece no mapa desde o começo
 		return true
 	for s: Vector2i in r.sides:
 		var nb: Room = rooms.get(r.grid + s)

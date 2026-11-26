@@ -11,6 +11,7 @@ const GAP := 16.0
 const TOP := 82.0
 
 var options: Array[String] = []
+var title_text := "ESCOLHA UM UPGRADE"
 var _cards: Array[UpgradeCard] = []
 var _hover := -1
 var _t := 0.0
@@ -22,10 +23,10 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	_title = UpgradeCard.label(self, "ESCOLHA UM UPGRADE", Fx.BIG, Color("ffd966"), 4)
+	_title = Fx.ui_label(self, title_text, 22, Color("ffd966"), "black", 6)
 	_title.position = Vector2(0, 30)
 	_title.size = Vector2(640, 26)
-	var hint := UpgradeCard.label(self, "CLIQUE OU APERTE 1, 2, 3", Fx.SMALL, Color("8a7a98"))
+	var hint := Fx.ui_label(self, "Clique ou aperte 1, 2, 3", 8, Color("8a7a98"), "semibold")
 	hint.position = Vector2(0, TOP + CARD.y + 16)
 	hint.size = Vector2(640, 14)
 	var total := options.size() * CARD.x + (options.size() - 1) * GAP
@@ -117,6 +118,8 @@ func _draw() -> void:
 
 ## Uma carta de upgrade (desenhada em código, com os textos como Labels filhos).
 class UpgradeCard extends Control:
+	const NAME_Y := 96.0
+	const NAME_LINE := 13.0
 	var id := ""
 	var key := 1
 	var base_pos := Vector2.ZERO
@@ -126,35 +129,28 @@ class UpgradeCard extends Control:
 	var _t := 0.0
 	var _lift := 0.0
 
-	static func label(parent: Node, text: String, size: int, color: Color, outline: int = 2) -> Label:
-		var l := Label.new()
-		l.text = text
-		l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		l.add_theme_font_size_override("font_size", size)
-		l.add_theme_color_override("font_color", color)
-		l.add_theme_color_override("font_outline_color", Fx.OUTLINE)
-		l.add_theme_constant_override("outline_size", outline)
-		parent.add_child(l)
-		return l
-
 	func _ready() -> void:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var d: Dictionary = Upgrades.DEFS[id]
 		var c: Color = d["color"]
-		var tag := label(self, d["tag"], Fx.SMALL, c.lightened(0.5))
+		var tag := Fx.ui_label(self, d["tag"], 7, c.lightened(0.55), "bold")
 		tag.position = Vector2(0, 76)
-		tag.size = Vector2(size.x, 14)
-		var name_l := label(self, d["name"], Fx.SMALL, Color("fff4dc"))
-		name_l.position = Vector2(0, 98)
-		name_l.size = Vector2(size.x, 19)
-		var lines := String(d["name"]).count("\n") + 1
-		var desc := label(self, d["desc"], Fx.SMALL, Color("c8bcd4"))
-		desc.position = Vector2(0, 98 + lines * 19 + 10)
-		desc.size = Vector2(size.x, 19)
-		var k := label(self, str(key), Fx.SMALL, Color("fff4dc"))
+		tag.size = Vector2(size.x, 15)
+		var name_l := Fx.ui_label(self, d["name"], 11, Color("fff4dc"), "black")
+		name_l.position = Vector2(0, NAME_Y)
+		name_l.size = Vector2(size.x, NAME_LINE)
+		name_l.add_theme_constant_override("line_spacing", -3)
+		var desc := Fx.ui_label(self, d["desc"], 8, Color("c8bcd4"), "semibold")
+		desc.position = Vector2(0, _desc_y())
+		desc.size = Vector2(size.x, 12)
+		var k := Fx.ui_label(self, str(key), 8, Color("fff4dc"), "bold")
 		k.position = Vector2(6, size.y - 21)
 		k.size = Vector2(14, 14)
+
+	## Onde começa a descrição (depende de quantas linhas o nome tem).
+	func _desc_y() -> float:
+		var lines := String(Upgrades.DEFS[id]["name"]).count("\n") + 1
+		return NAME_Y + lines * NAME_LINE + 10.0
 
 	func set_hover(on: bool) -> void:
 		_hover = on
@@ -176,7 +172,11 @@ class UpgradeCard extends Control:
 		draw_rect(Rect2(4, size.y + 2 + _lift, size.x - 4, 4), Color(0, 0, 0, 0.35))
 		# moldura
 		draw_rect(r.grow(2), Fx.OUTLINE)
-		var border := Color.WHITE if white else (c if _hover else Color("473955"))
+		var rare := Upgrades.is_rare(id)
+		var idle := Color("473955")
+		if rare: # raro: moldura dourada que brilha
+			idle = Color("b8862a").lerp(Color("ffd23f"), 0.5 + sin(_t * 4.0) * 0.5)
+		var border := Color.WHITE if white else (c if _hover else idle)
 		draw_rect(r.grow(1), border)
 		draw_rect(r, Color("1a1026"))
 		# cabeçalho na cor do item com pontilhado
@@ -196,13 +196,12 @@ class UpgradeCard extends Control:
 		var bob := roundf(sin(_t * 3.0 + key) * (2.0 if _hover else 1.0))
 		Upgrades.draw_icon(self, id, center - Vector2(24, 24 - bob), 3.0)
 		# etiqueta da categoria
-		var tw := Fx.text_width(d["tag"]) + 10.0
+		var tw := Fx.ui_width(d["tag"], 7, "bold") + 12.0
 		var tag_r := Rect2(size.x / 2.0 - tw / 2.0, 76, tw, 15)
 		draw_rect(tag_r.grow(1), Fx.OUTLINE)
 		draw_rect(tag_r, c.darkened(0.6))
 		# divisória com losango
-		var lines := String(d["name"]).count("\n") + 1
-		var dy := 98.0 + lines * 19.0 + 4.0
+		var dy := _desc_y() - 5.0
 		draw_rect(Rect2(20, dy, size.x - 40, 1), Color("3a2c48"))
 		draw_rect(Rect2(size.x / 2.0 - 2, dy - 2, 5, 5), c)
 		# tecla
@@ -222,5 +221,10 @@ class UpgradeCard extends Control:
 				elif i == n and int(_t * 4.0) % 2 == 0:
 					col = c.lightened(0.4)
 				draw_rect(pr, col)
+		if rare:
+			# cantoneiras douradas
+			for p: Vector2 in [Vector2(-2, -2), Vector2(size.x - 4, -2), Vector2(-2, size.y - 4), Vector2(size.x - 4, size.y - 4)]:
+				draw_rect(Rect2(p, Vector2(6, 6)), Fx.OUTLINE)
+				draw_rect(Rect2(p + Vector2(1, 1), Vector2(4, 4)), Color("ffd23f"))
 		if white:
 			draw_rect(r, Color(1, 1, 1, 0.25))

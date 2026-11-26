@@ -3,7 +3,9 @@
 - Engine: Godot 4.7.2 (Steam). Binário: `~/.steam/debian-installation/steamapps/common/Godot Engine/godot.x11.opt.tools.64`
 - Rodar: `./run.sh play` | Editor: `./run.sh`
 - Checar erros sem abrir janela: `"$GODOT" --headless --path . --quit-after 60`
-- Resolução base 640x360, stretch `viewport` + escala inteira, filtro nearest, snap de pixel ligado. Tiles de 16px (8 de arte x2). HUD em 1x.
+- Resolução base 640x360, stretch `canvas_items` + escala inteira, filtro nearest, snap de pixel ligado. Tiles de 16px (8 de arte x2). HUD em 1x.
+  - `canvas_items` (e não `viewport`) pra interface ter texto liso e nítido na resolução da janela; o mundo continua pixel art porque a escala é inteira e as texturas usam nearest.
+  - Interface (cartas de upgrade, mochila no TAB, menu do ESC, HUD, minimapa, barra do chefe) usa Noto Sans (`assets/fonts/ui/`, licença OFL) via `Fx.ui_label`/`Fx.ui_text`, importada em MSDF (sem MSDF o espaçamento entre letras fica torto). Textos no mundo (dano, falas) continuam na fonte pixel.
 - GDScript com tipagem estática, tabs, comentários em português.
 - Pastas: `scenes/`, `scripts/`, `assets/{sprites,tilesets,sfx,music,fonts}`.
 - **Estilo visual "clean escuro 2.5D"**: paleta roxo-acinzentada escura (fundo `#0e0718`, tijolo `#473955`, piso `#3d3049`), contorno fino quase preto `#0b0612`, volume (topo claro, lado direito escuro, sombra projetada pra direita/baixo) e iluminação: `Fx.setup_lighting` (CanvasModulate escuro + luz no jogador) e `Fx.glow` (brilho + PointLight2D) em quem acende.
@@ -12,8 +14,11 @@
   - Inimigos e chefe: imagem de frente do SpriteCook (`assets/sprites/enemies/`, reduzida por `tools/build_enemy_sprites.py`), animada em código em `Enemy._draw_sprite` (passo, respiração, achatamento, virar). Móveis e ônibus: pixel art com cara de 3D (topo + frente + lado) do SpriteCook Pixel Engine, gerados já no tamanho final (1x, proporcional ao protagonista de ~42px: carteira 36, estante 64x80, ônibus 212x73) e preparados por `tools/build_clean_props.py` → `assets/props/clean/` (versão reta de frente em `raw2/` tem prioridade); `prop.gd` desenha o sprite se existir (senão cai no desenho em código). Prompt padrão (reto): "front-facing top-down 3/4 view, camera straight ahead (not isometric, not diagonal): top surface visible above the front face, symmetric. Detailed pixel art, dark outline, soft shading 3-4 tones, rim light, cozy dark moody palette". Projéteis do chefe: mapas de pixel 1x em `enemy_bullet.gd`.
   - Não gire sprites de pixel art (borra); gire só em passos de 45°/90°.
   - Prints sem abrir janela na tela: rodar o jogo com janela escondida (`--position -20000,-20000`, `-WindowStyle Hidden`) e salvar `get_viewport().get_texture().get_image()`.
-- Textos: fonte pixel própria (`tools/build_pixel_font.py` → `assets/fonts/`, montada no autoload `PixelFont`). Só fica nítida em 11 ou 22 (`Fx.SMALL`/`Fx.BIG`); `Fx.text` e `Fx.float_text` já arredondam.
+- Textos do mundo: fonte pixel própria (`tools/build_pixel_font.py` → `assets/fonts/`, montada no autoload `PixelFont`). Só fica nítida em 11 ou 22 (`Fx.SMALL`/`Fx.BIG`); `Fx.text` e `Fx.float_text` já arredondam.
 - Camadas de colisão: 1 = paredes/cenário, 2 = jogador, 3 = inimigos (corpo), 4 = hurtbox dos inimigos (onde o tiro do jogador acerta).
 - Andares: `scenes/floor.tscn` + `scripts/floor.gd` (geração), `room.gd` (sala, portas, ondas), `scripts/enemies/*.gd` (herdam de `enemy.gd`).
+  - Salas comuns sorteiam tamanho pequeno/médio/grande (`Room.size_class`), que muda quantos inimigos vêm. Móveis: encostados nas paredes + grupinhos soltos com folga `WALK_GAP` entre eles.
+  - Cada andar tem uma sala de desafio (`kind = "desafio"`, ícone de perigo no minimapa): 5 rodadas e um baú (`chest.gd`) com 3 upgrades raros.
+- Upgrades: `scripts/upgrades.gd` (definições e números) + `upgrade_pick.gd` (cartas). Autoloads: `Settings` (volume/tela cheia em `user://settings.cfg`, canais de áudio SFX/Music) e `PauseMenu` (ESC).
 - Commits e branches: seguir `COMMITS.md` (ex.: branch `feat/inimigo-espiral`, commit `feat(enemy): ...`). `main` sempre roda.
 - Lore e tema: ver `LORE.md` (faculdade; 4 estudantes presos querendo se formar; bosses = professores; armas/upgrades temáticos). Todo conteúdo novo deve seguir esse tema.
