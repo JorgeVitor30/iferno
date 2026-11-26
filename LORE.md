@@ -25,7 +25,27 @@ São **4 jogadores**, todos estudantes tentando se formar.
 ## Inimigos e chefes
 
 - **Chefes (bosses)** são os **professores**, e outras figuras da faculdade também entram nessa categoria.
-- Inimigos comuns: _a definir_ (sempre dentro do tema faculdade).
+- Inimigos comuns (todos atacam com coisas de papel ou do dia a dia da faculdade):
+
+| Inimigo | Tipo | Ataque |
+|---|---|---|
+| Zelador | corpo a corpo | esfregada em arco com o esfregão; deixa poças e a plaquinha de piso molhado |
+| Veterano do trote | corpo a corpo, rápido | mira e investe com o balde de tinta, sujando o chão |
+| Professor | à distância | leque de provas corrigidas (com nota vermelha) |
+| Estagiário | à distância, fraco | aviõezinhos de papel que perseguem o jogador |
+| Coordenadora | elite surpresa (aparece na última onda de uma sala sorteada) | anel e espiral de bolinhas de papel, leque de provas |
+
+## Andares
+
+- Cada andar é gerado na hora: salas ligadas por corredores. Começa na **portaria** (onde o ônibus deixa os estudantes) e termina no **auditório**, onde está o chefe do andar.
+- **Só dá pra subir de andar depois de derrotar o chefe**: a escada aparece no auditório quando ele cai.
+- Chefe do 1º andar: **Professor de Estatística**. Topete, óculos redondos enormes, bigodão, gravata borboleta, suspensório; quase 3x o tamanho de um estudante. Muita vida, 3 fases (66%: chama monitores; 33%: fica furioso e emenda golpes).
+  - Golpes: *y = log(x)* (giz em curvas logarítmicas), *curva normal* (leque de provas em sino), *calculadora* (explode em números), *histograma* (barras sobem do chão, sempre com uma brecha), *dispersão* (pontos caem do gráfico), *regressão linear* (avisa com uma reta e dispara por ela), *desvio padrão* (anéis), *amostra aleatória* (rajada), *SILÊNCIO!!* (se você fica colado nele).
+  - Mira onde o jogador vai estar e escolhe o golpe pela distância, mas sempre avisa antes e para pra limpar os óculos de vez em quando.
+- Salas: sala de aula, biblioteca, laboratório, cantina, sala dos professores, xerox, lab. de informática, banheiro. Tamanho, móveis e decoração são sorteados (cada tipo tem 2 a 3 jeitos de arrumar).
+- Entrou numa sala com inimigos: a porta tranca com grade e fita de "interditado" até todo mundo cair.
+- Café cura 1 de vida.
+- Andar 1 = entrada da faculdade. Os de cima (bloco de aulas, biblioteca central...) ainda reaproveitam as mesmas salas, só que mais difíceis.
 
 ## Armas e upgrades
 

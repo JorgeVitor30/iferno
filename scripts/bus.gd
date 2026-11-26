@@ -5,24 +5,25 @@ extends Node2D
 
 signal boarded(player: Node2D)
 
-const TEX := preload("res://assets/props/bus.png")
+const TEX := preload("res://assets/props/clean/onibus.png") # sprite 3D (SpriteCook)
+const SIZE := Vector2(212, 73)
 
-@export var door_x := 60.0          # centro da porta, relativo ao meio do ônibus
-@export var exhaust := Vector2(-94, -10) # saída do escapamento, relativa à origem
+@export var door_x := 70.0          # centro da porta, relativo ao meio do ônibus
+@export var exhaust := Vector2(-104, -14) # saída do escapamento, relativa à origem
 @export var idle_shake_interval := 0.07 # o motor "pula" 1px nesse ritmo
 
-var _sprite := Sprite2D.new()
+var _sprite := Node2D.new() # o desenho do ônibus (treme com o motor)
 var _smoke := CPUParticles2D.new()
 var _shake_t := 0.0
 var _leaving := false
 var _drive_speed := 0.0
 
 func _ready() -> void:
-	var size := TEX.get_size()
-	_sprite.texture = TEX
-	_sprite.centered = false
-	_sprite.offset = Vector2(-size.x / 2.0, -size.y)
+	var size := SIZE
+	_sprite.draw.connect(_draw_bus)
 	add_child(_sprite)
+	Fx.glow(_sprite, Vector2(104, -18), 30.0, Color("fce6bd"), 0.6) # farol
+	Fx.glow(_sprite, Vector2(0, -40), 80.0, Color("ffb060"), 0.22)  # luz de dentro
 	_add_body(size)
 	_add_door()
 	_setup_smoke()
@@ -40,6 +41,7 @@ func _add_body(size: Vector2) -> void:
 
 func _add_door() -> void:
 	var door := Area2D.new()
+	door.collision_mask = 2 # camada do jogador
 	var col := CollisionShape2D.new()
 	var rect := RectangleShape2D.new()
 	rect.size = Vector2(22, 10)
@@ -82,6 +84,11 @@ func _make_puff_texture() -> Texture2D:
 			if Vector2(x - 3, y - 3).length() <= 3.2:
 				img.set_pixel(x, y, Color.WHITE)
 	return ImageTexture.create_from_image(img)
+
+## Ônibus (sprite do SpriteCook, de lado, frente pra direita). Origem = meio da base.
+func _draw_bus() -> void:
+	_sprite.draw_rect(Rect2(-SIZE.x / 2.0 + 8, -4, SIZE.x - 10, 7), Color(0, 0, 0, 0.35)) # sombra
+	_sprite.draw_texture(TEX, Vector2(-floorf(SIZE.x / 2.0), -SIZE.y + 2))
 
 func _process(delta: float) -> void:
 	# Motor ligado: o corpo do ônibus pula 1px pra cima e pra baixo.
