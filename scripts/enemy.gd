@@ -135,18 +135,33 @@ func hurt_player() -> void:
 	if player.has_method("take_damage"):
 		player.take_damage(1)
 
-func take_damage(amount: int = 1, dir: Vector2 = Vector2.ZERO) -> void:
+func take_damage(amount: int = 1, dir: Vector2 = Vector2.ZERO, crit: bool = false) -> void:
 	if dead or _spawn_t > 0.0:
 		return
 	hp -= amount
 	_flash = 0.07
+	if amount < 100: # (o chefe "apaga" os ajudantes com 999: esse não mostra número)
+		_damage_number(amount, crit)
+	if hp > 0:
+		Sfx.play(self, "crit" if crit else "hit")
+	if crit:
+		Fx.shake(self, 2.0)
 	_knock = dir * (0.0 if boss else 40.0 if elite else 110.0)
 	_squash = Vector2(1.3, 0.75)
 	Fx.burst(get_parent(), global_position + Vector2(0, -hurt_size.y * 0.5) * body_scale, hit_color, 4, 55.0, 1.5)
 	if hp <= 0:
 		_die()
 
+## Número de dano subindo da cabeça (crítico: amarelo e grande).
+func _damage_number(amount: int, crit: bool) -> void:
+	var pos := global_position + Vector2(randf_range(-8, 8), -hurt_size.y * body_scale - 4)
+	if crit:
+		Fx.float_text(get_parent(), pos, "%d!" % amount, Color("ffd966"), Fx.BIG)
+	else:
+		Fx.float_text(get_parent(), pos, str(amount), Color("f4e4c0"), Fx.SMALL)
+
 func _die() -> void:
+	Sfx.play(self, "kill", 0.12)
 	dead = true
 	_col.set_deferred("disabled", true)
 	_hurtbox.set_deferred("monitorable", false)

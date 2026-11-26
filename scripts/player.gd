@@ -19,6 +19,19 @@ signal died
 @export var roll_hop := 5.0       # altura do pulinho no meio do dodge, em pixels
 @export var fire_rate := 0.15
 
+# Números base (antes dos upgrades). Upgrades.apply_stats() recalcula os de cima a partir deles.
+var base_max_hp := 0
+var base_speed := 0.0
+var base_fire_rate := 0.0
+var base_roll_cooldown := 0.0
+# Tiro (mexido pelos upgrades)
+var bullet_damage := 1
+var bullet_pierce := 0     # quantos inimigos extras o tiro atravessa
+var bullet_count := 1      # projéteis por tiro (em leque)
+var bullet_homing := 0.0   # força com que o tiro vira pro inimigo
+var crit_chance := 0.0
+var _boost := 0.0          # tempo restante do Café Duplo
+
 var _roll_timer := 0.0
 var _roll_dir := Vector2.ZERO
 var _roll_cd := 0.0
@@ -48,6 +61,11 @@ func _ready() -> void:
 	# Camadas de colisão: 1 = paredes/cenário, 2 = jogador, 3 = inimigos, 4 = hurtbox dos inimigos.
 	collision_layer = 2
 	collision_mask = 1
+	base_max_hp = max_hp
+	base_speed = speed
+	base_fire_rate = fire_rate
+	base_roll_cooldown = roll_cooldown
+	Upgrades.apply_stats(self)
 	hp = max_hp
 	health_changed.emit(hp, max_hp)
 	$Sprite2D.sprite_frames = _build_frames()
@@ -83,8 +101,11 @@ func take_damage(amount: int = 1) -> void:
 	hp = max(hp - amount, 0)
 	_invuln_timer = invuln_time
 	health_changed.emit(hp, max_hp)
+	Fx.burst(get_parent(), global_position + Vector2(0, -16), Color("e0383f"), 8, 70.0, 2.0)
 	if hp == 0:
 		_die()
+	else:
+		Sfx.play(self, "hurt")
 
 func heal(amount: int = 1) -> void:
 	if hp <= 0:
@@ -92,7 +113,16 @@ func heal(amount: int = 1) -> void:
 	hp = mini(hp + amount, max_hp)
 	health_changed.emit(hp, max_hp)
 
+## Café Duplo: anda mais rápido por um tempo.
+func speed_boost(time: float) -> void:
+	_boost = time
+
+## Trava o tiro um instante (ex.: o clique que escolheu o upgrade não vira tiro).
+func hold_fire(time: float) -> void:
+	_fire_cd = maxf(_fire_cd, time)
+
 func _die() -> void:
+	Sfx.play(self, "die", 0.0)
 	set_physics_process(false)
 	$Sprite2D.modulate = Color(1, 0.3, 0.3)
 	died.emit()
@@ -108,6 +138,8 @@ func _physics_process(delta: float) -> void:
 	_fire_cd -= delta
 	_roll_cd = maxf(_roll_cd - delta, 0.0)
 	_invuln_timer = max(_invuln_timer - delta, 0.0)
+	_boost = maxf(_boost - delta, 0.0)
+	var max_speed := speed * (1.35 if _boost > 0.0 else 1.0)
 	if Input.is_action_just_pressed("debug_hit"): # H = tomar dano (teste)
 		take_damage()
 	if is_rolling():
@@ -119,11 +151,11 @@ func _physics_process(delta: float) -> void:
 			_roll_cd = roll_cooldown
 	else:
 		var rate := accel if input != Vector2.ZERO else friction
-		velocity = velocity.move_toward(input * speed, rate * delta)
+		velocity = velocity.move_toward(input * max_speed, rate * delta)
 		if Input.is_action_just_pressed("dodge") and input != Vector2.ZERO and _roll_cd <= 0.0:
 			_roll_timer = roll_time
 			_roll_dir = input.normalized()
-			_play_action_sound(180.0, 90.0, 0.14, 0.12)
+			Sfx.play(self, "roll")
 			_start_roll_anim()
 		elif Input.is_action_pressed("shoot") and _fire_cd <= 0.0:
 			_shoot()
@@ -131,37 +163,21 @@ func _physics_process(delta: float) -> void:
 
 func _shoot() -> void:
 	_fire_cd = fire_rate
-	_play_action_sound(760.0, 220.0, 0.07, 0.16)
-	var dir := (get_global_mouse_position() - global_position).normalized()
-	var b := BULLET.instantiate()
-	b.global_position = global_position + Vector2(0, -15) + dir * 12.0
-	b.direction = dir
-	get_parent().add_child(b)
-
-## Cria efeitos curtos em PCM para manter o protótipo sem arquivos de áudio externos.
-func _play_action_sound(start_freq: float, end_freq: float, duration: float, volume: float) -> void:
-	var stream := AudioStreamWAV.new()
-	stream.format = AudioStreamWAV.FORMAT_16_BITS
-	stream.mix_rate = 22050
-	stream.stereo = false
-	var sample_count := int(stream.mix_rate * duration)
-	var data := PackedByteArray()
-	data.resize(sample_count * 2)
-	for i in sample_count:
-		var t := float(i) / float(sample_count)
-		var freq := lerpf(start_freq, end_freq, t)
-		var envelope := (1.0 - t) * (1.0 - t)
-		var sample := sin(TAU * freq * float(i) / stream.mix_rate) * envelope * volume
-		var value := int(clampf(sample * 32767.0, -32768.0, 32767.0))
-		data[i * 2] = value & 0xff
-		data[i * 2 + 1] = (value >> 8) & 0xff
-	stream.data = data
-	var audio := AudioStreamPlayer.new()
-	audio.stream = stream
-	audio.volume_db = -2.0
-	audio.finished.connect(audio.queue_free)
-	add_child(audio)
-	audio.play()
+	Sfx.play(self, "shoot")
+	var aim := (get_global_mouse_position() - global_position).normalized()
+	# Apostila: mais projéteis em leque, 10° entre eles, centrados na mira.
+	var spread := deg_to_rad(10.0)
+	for i in bullet_count:
+		var dir := aim.rotated((i - (bullet_count - 1) / 2.0) * spread)
+		var b := BULLET.instantiate()
+		b.global_position = global_position + Vector2(0, -15) + dir * 12.0
+		b.direction = dir
+		var crit := randf() < crit_chance
+		b.damage = bullet_damage * (2 if crit else 1)
+		b.crit = crit
+		b.pierce = bullet_pierce
+		b.homing = bullet_homing
+		get_parent().add_child(b)
 
 func _process(delta: float) -> void:
 	queue_redraw()

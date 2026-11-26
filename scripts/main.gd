@@ -153,6 +153,7 @@ func _on_bus_boarded(_who: Node2D) -> void:
 	# Jogador some dentro do ônibus, ônibus arranca, tela escurece e começa a run.
 	FloorLevel.floor_num = 1
 	FloorLevel.carry_hp = -1
+	Upgrades.reset()
 	player.hide()
 	player.set_physics_process(false)
 	player.set_process(false)

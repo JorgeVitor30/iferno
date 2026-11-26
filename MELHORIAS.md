@@ -4,26 +4,26 @@
 
 ### Feedback de combate
 
-- Flash visual ao acertar inimigos.
-- Numeros de dano por alguns frames.
-- Particulas ao acertar e destruir inimigos.
-- Sons para tiro, acerto, dano recebido e morte.
-- Pequena tremida de camera em golpes fortes.
-- Barra de vida mais clara para elites e chefes.
+- [x] Flash visual ao acertar inimigos.
+- [x] Numeros de dano por alguns frames (critico em amarelo e grande).
+- [x] Particulas ao acertar e destruir inimigos.
+- [x] Sons para tiro, acerto, dano recebido e morte (sintetizados em `scripts/sfx.gd`; arquivos em `assets/sfx/<nome>.wav` substituem).
+- [x] Pequena tremida de camera em golpes fortes.
+- [x] Barra de vida mais clara para elites e chefes.
 
 ### Upgrades
 
-Adicionar uma escolha entre tres upgrades depois de algumas salas. Exemplos:
+Escolha entre tres upgrades a cada 2 salas limpas e depois do chefe (`scripts/upgrades.gd`, `scripts/upgrade_pick.gd`). Pausa o jogo; escolhe com clique ou 1/2/3. Os upgrades passam de andar e zeram ao reprovar.
 
-- **Cafe duplo:** cura 1 vida e aumenta a velocidade por alguns segundos.
-- **Calculadora cientifica:** tiros atravessam um inimigo.
-- **Grampeador:** aumenta o dano, mas reduz a cadencia.
-- **Mochila pesada:** aumenta a vida, mas reduz o movimento.
-- **Monitoria:** reduz a recarga do dodge.
-- **Apostila:** adiciona mais projeteis ao disparo.
-- **Wi-Fi da faculdade:** projeteis perseguem levemente os inimigos.
-- **Trabalho em grupo:** cria um pequeno aliado que atira junto.
-- **Caneta vermelha:** chance de causar dano critico.
+- [x] **Cafe duplo:** cura 1 vida e aumenta a velocidade por alguns segundos.
+- [x] **Calculadora cientifica:** tiros atravessam um inimigo.
+- [x] **Grampeador:** aumenta o dano, mas reduz a cadencia.
+- [x] **Mochila pesada:** aumenta a vida, mas reduz o movimento.
+- [x] **Monitoria:** reduz a recarga do dodge.
+- [x] **Apostila:** adiciona mais projeteis ao disparo.
+- [x] **Wi-Fi da faculdade:** projeteis perseguem levemente os inimigos.
+- [ ] **Trabalho em grupo:** cria um pequeno aliado que atira junto.
+- [x] **Caneta vermelha:** chance de causar dano critico.
 
 ## Prioridade media
 
@@ -80,8 +80,8 @@ Criar quatro estudantes com estilos diferentes:
 
 ## Ordem recomendada
 
-1. Feedback de tiro, dano e morte.
-2. Sistema de escolha entre tres upgrades.
+1. ~~Feedback de tiro, dano e morte.~~ (feito)
+2. ~~Sistema de escolha entre tres upgrades.~~ (feito, falta o aliado do Trabalho em grupo)
 3. Salas especiais de cantina, biblioteca e laboratorio.
 4. Recompensas unicas dos chefes.
 5. Quatro estudantes jogaveis.

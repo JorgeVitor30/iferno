@@ -13,6 +13,7 @@ var _title := Label.new()
 var _counter := Label.new()
 var _banner := Label.new()
 var _hurt := ColorRect.new()
+var _upgrades_row := Control.new()
 var _map: Control
 var _boss_bar: BossBar
 var _banner_tw: Tween
@@ -31,7 +32,7 @@ func _ready() -> void:
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(_title)
 	_style(_counter, 9, Color("ff9a8a"))
-	_counter.position = Vector2(8, 20)
+	_counter.position = Vector2(8, 42)
 	_counter.visible = false
 	add_child(_counter)
 	_style(_banner, Fx.BIG, Color.WHITE)
@@ -41,6 +42,10 @@ func _ready() -> void:
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_banner.modulate.a = 0.0
 	add_child(_banner)
+	_upgrades_row.position = Vector2(8, 22)
+	_upgrades_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_upgrades_row.draw.connect(_draw_upgrades_row)
+	add_child(_upgrades_row)
 	move_child(fade, get_child_count() - 1) # fade por cima de tudo
 
 func _style(l: Label, size: int, color: Color) -> void:
@@ -117,6 +122,36 @@ func show_boss(enemy: Node) -> void:
 		add_child(_boss_bar)
 		move_child(fade, get_child_count() - 1)
 	_boss_bar.track(enemy)
+
+## Pausa o jogo e mostra a escolha de upgrade. Chama on_pick(id) quando escolher.
+func show_upgrades(options: Array[String], on_pick: Callable) -> void:
+	if options.is_empty():
+		return
+	var pick := UpgradePick.new()
+	pick.options = options
+	pick.picked.connect(func(id: String):
+		get_tree().paused = false
+		on_pick.call(id)
+		refresh_upgrades())
+	add_child(pick)
+	move_child(fade, get_child_count() - 1)
+	get_tree().paused = true
+
+## Ícones dos upgrades pegos, embaixo dos corações (com "x2" se repetiu).
+func refresh_upgrades() -> void:
+	_upgrades_row.queue_redraw()
+
+func _draw_upgrades_row() -> void:
+	var x := 0.0
+	for id: String in Upgrades.taken:
+		if id == "cafe":
+			continue # café é na hora, não fica
+		Upgrades.draw_icon(_upgrades_row, id, Vector2(x, 0))
+		var n := Upgrades.count(id)
+		if n > 1:
+			Fx.text(_upgrades_row, Vector2(x + 13, 17), "x%d" % n, Color("f4e4c0"), Fx.SMALL)
+			x += 14.0
+		x += 20.0
 
 func hurt_flash() -> void:
 	_hurt.color.a = 0.35

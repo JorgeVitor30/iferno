@@ -29,6 +29,7 @@ func _try_pick(body: Node2D) -> void:
 	if body.hp >= body.max_hp or body.hp <= 0:
 		return
 	body.heal(1)
+	Sfx.play(self, "pick")
 	Fx.float_text(get_parent(), position + Vector2(0, -20), "+1 CAFÉ!", Color("ffd966"))
 	Fx.burst(get_parent(), position + Vector2(0, -8), Color("8a5a3a"), 8, 50.0)
 	queue_free()

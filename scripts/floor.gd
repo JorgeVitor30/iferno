@@ -92,7 +92,7 @@ func _generate() -> void:
 		var room := Room.new()
 		room.setup(c, k, Vector2(c) * CELL, floor_num, entities)
 		room.entered.connect(_on_room_entered)
-		room.cleared_room.connect(func(_r: Room): hud.refresh_map())
+		room.cleared_room.connect(_on_room_cleared)
 		rooms[c] = room
 	# Elite (coordenadora) escondida em salas comuns sorteadas
 	var normal: Array = []
@@ -226,6 +226,19 @@ func _on_room_entered(room: Room) -> void:
 		hud.set_title(room.title)
 	hud.refresh_map()
 
+func _on_room_cleared(room: Room) -> void:
+	hud.refresh_map()
+	if not Upgrades.room_cleared(room.is_boss_room()):
+		return
+	await get_tree().create_timer(1.2).timeout # deixa a faixa "AULA DISPENSADA" aparecer
+	if player.hp <= 0 or _leaving:
+		return
+	hud.show_upgrades(Upgrades.roll(3), func(id: String):
+		Upgrades.take(id, player)
+		player.hold_fire(0.25)
+		Fx.float_text(entities, player.global_position + Vector2(0, -44),
+			String(Upgrades.DEFS[id]["name"]).replace("\n", " ") + "!", Color("ffd966")))
+
 func _on_health_changed(hp: int, max_hp: int) -> void:
 	hud.set_health(hp, max_hp)
 	if hp < _last_hp:
@@ -237,6 +250,7 @@ func _on_player_died() -> void:
 	hud.banner("REPROVADO!", Color("ff5a4a"))
 	floor_num = 1
 	carry_hp = -1
+	Upgrades.reset()
 
 func next_floor() -> void:
 	if _leaving:
