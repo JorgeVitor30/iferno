@@ -19,6 +19,8 @@
 - Andares: `scenes/floor.tscn` + `scripts/floor.gd` (geração), `room.gd` (sala, portas, ondas), `scripts/enemies/*.gd` (herdam de `enemy.gd`).
   - Salas comuns sorteiam tamanho pequeno/médio/grande (`Room.size_class`), que muda quantos inimigos vêm. Móveis: encostados nas paredes + grupinhos soltos com folga `WALK_GAP` entre eles.
   - Cada andar tem uma sala de desafio (`kind = "desafio"`, ícone de perigo no minimapa): 5 rodadas e um baú (`chest.gd`) com 3 upgrades raros.
+- **Padrão de chefe** (todo chefe novo segue): em `_setup()` preencher `boss = true`, `display_name`, `intro_subtitle`, `intro_color` (e opcional `portrait_tex`, `boss_music`). Ao entrar na sala, `BossIntro` (`scripts/boss_intro.gd`) pausa ~3s: estudante na esquerda, chefe em close na direita, nome + descrição + som; depois toca a música de chefe (padrão `assets/music/boss_theme.mp3`, canal Music) que para quando ele morre. 1º chefe: Dr. Cirineu ("Você não sabe, nem eu.").
+- Moedas (`scripts/wallet.gd`) caem ao matar inimigos; gastas na lojinha da tia (`kind = "loja"`, `shopkeeper.gd` + `shop_item.gd`, tecla E), uma por andar.
 - Upgrades: `scripts/upgrades.gd` (definições e números) + `upgrade_pick.gd` (cartas). Autoloads: `Settings` (volume/tela cheia em `user://settings.cfg`, canais de áudio SFX/Music) e `PauseMenu` (ESC).
 - Commits e branches: seguir `COMMITS.md` (ex.: branch `feat/inimigo-espiral`, commit `feat(enemy): ...`). `main` sempre roda.
 - Lore e tema: ver `LORE.md` (faculdade; 4 estudantes presos querendo se formar; bosses = professores; armas/upgrades temáticos). Todo conteúdo novo deve seguir esse tema.

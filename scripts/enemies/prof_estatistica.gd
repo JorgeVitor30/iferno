@@ -80,7 +80,9 @@ var _spawned_minions: Array[Enemy] = []
 
 func _setup() -> void:
 	sprite_tex = preload("res://assets/sprites/enemies/prof_estatistica.png")
-	display_name = "PROF. DE ESTATÍSTICA"
+	display_name = "DR. CIRINEU"
+	intro_subtitle = "Você não sabe, nem eu."
+	intro_color = Color("e0503a")
 	boss = true
 	max_hp = 520 + (floor_level - 1) * 160
 	speed = 34.0

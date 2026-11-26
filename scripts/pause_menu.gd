@@ -233,4 +233,5 @@ func _back_to_start() -> void:
 	FloorLevel.floor_num = 1
 	FloorLevel.carry_hp = -1
 	Upgrades.reset()
+	Wallet.reset()
 	get_tree().change_scene_to_file(MAIN_SCENE)

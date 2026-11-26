@@ -21,6 +21,9 @@ const DEFS := {
 	"horn": [349.0, 340.0, 0.2, 0.22, 0.05, "sq"],   # buzina "fom"
 	"engine": [48.0, 120.0, 1.5, 0.4, 0.45, "sq"],   # motor arrancando
 	"menu": [700.0, 900.0, 0.06, 0.12, 0.0, "sq"],
+	"coin": [1300.0, 1900.0, 0.08, 0.1, 0.0, "sq"],
+	"whoosh": [200.0, 900.0, 0.25, 0.14, 0.8, "sin"],
+	"boss_sting": [110.0, 45.0, 0.7, 0.4, 0.35, "sq"],
 	"chest": [300.0, 1500.0, 0.5, 0.22, 0.1, "sq"],
 }
 const MIN_GAP := 0.035 # não toca o mesmo som duas vezes em menos tempo que isso

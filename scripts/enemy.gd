@@ -34,6 +34,12 @@ var sprite_tex: Texture2D
 var shadow_r := 9.0
 var elite := false
 var boss := false # chefe do andar: barra de vida no HUD, não é empurrado por tiro
+## Apresentação de chefe (BossIntro, padrão pra todos os chefes): nome = display_name.
+var intro_subtitle := ""
+var intro_color := Color("ff5a4a")
+var portrait_tex: Texture2D # imagem do chefe na apresentação (padrão: sprite_tex)
+## Música da luta (padrão pra todos; um chefe pode trocar no _setup).
+var boss_music := "res://assets/music/boss_theme"
 var display_name := ""
 var lines: PackedStringArray = []
 var death_lines: PackedStringArray = []
@@ -152,6 +158,13 @@ func take_damage(amount: int = 1, dir: Vector2 = Vector2.ZERO, crit: bool = fals
 	if hp <= 0:
 		_die()
 
+## Moedinhas automáticas (vão direto pra carteira; só mostra o "+n").
+func _drop_coins() -> void:
+	var n := Wallet.PER_BOSS if boss else Wallet.PER_ELITE if elite else Wallet.PER_ENEMY
+	Wallet.add(self, n)
+	Sfx.play(self, "coin", 0.05)
+	Fx.float_text(get_parent(), global_position + Vector2(10, -20), "+%d" % n, Color("ffd23f"))
+
 ## Número de dano subindo da cabeça (crítico: amarelo e grande).
 func _damage_number(amount: int, crit: bool) -> void:
 	var pos := global_position + Vector2(randf_range(-8, 8), -hurt_size.y * body_scale - 4)
@@ -162,6 +175,7 @@ func _damage_number(amount: int, crit: bool) -> void:
 
 func _die() -> void:
 	Sfx.play(self, "kill", 0.12)
+	_drop_coins()
 	dead = true
 	_col.set_deferred("disabled", true)
 	_hurtbox.set_deferred("monitorable", false)

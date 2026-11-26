@@ -73,7 +73,9 @@ func _draw() -> void:
 		draw_rect(Rect2(rect.position, Vector2(rect.size.x, 1)), col.lightened(0.35))  # brilho em cima
 		draw_rect(Rect2(rect.position.x, rect.end.y - 2, rect.size.x, 2), col.darkened(0.3)) # sombra embaixo
 		var mid := rect.get_center().floor()
-		if r.is_challenge() and not r.cleared:
+		if r.is_shop():
+			Wallet.draw_coin(self, mid + Vector2(0, 0), 1.0, blink)
+		elif r.is_challenge() and not r.cleared:
 			_trap(mid, blink or r.visited) # sala de prova surpresa: aparece mesmo sem visitar
 		elif not r.visited:
 			Fx.text(self, Vector2(rect.position.x, rect.end.y - 2), "?", Color("a898b8"), 8, rect.size.x, HORIZONTAL_ALIGNMENT_CENTER)
@@ -122,7 +124,7 @@ func _skull(c: Vector2, lit: bool) -> void:
 	draw_rect(Rect2(c + Vector2(1, -2), Vector2(1, 2)), OUTLINE)
 
 func _known(r: Room, rooms: Dictionary) -> bool:
-	if r.visited or r.is_challenge(): # a sala de desafio aparece no mapa desde o começo
+	if r.visited or r.is_challenge() or r.is_shop(): # desafio e loja aparecem no mapa desde o começo
 		return true
 	for s: Vector2i in r.sides:
 		var nb: Room = rooms.get(r.grid + s)

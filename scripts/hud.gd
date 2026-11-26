@@ -14,6 +14,8 @@ var _counter := Label.new()
 var _banner := Label.new()
 var _hurt := ColorRect.new()
 var _upgrades_row := Control.new()
+var _coins := Control.new()
+var _coin_pop := 0.0
 var _map: Control
 var _level: Node
 var _boss_bar: BossBar
@@ -33,7 +35,7 @@ func _ready() -> void:
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(_title)
 	_style(_counter, 9, Color("ff9a8a"))
-	_counter.position = Vector2(8, 42)
+	_counter.position = Vector2(8, 56)
 	_counter.visible = false
 	add_child(_counter)
 	_style(_banner, Fx.BIG, Color.WHITE)
@@ -43,6 +45,11 @@ func _ready() -> void:
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_banner.modulate.a = 0.0
 	add_child(_banner)
+	_coins.position = Vector2(8, 40)
+	_coins.size = Vector2(80, 14)
+	_coins.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_coins.draw.connect(_draw_coins)
+	add_child(_coins)
 	_upgrades_row.position = Vector2(8, 22)
 	_upgrades_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_upgrades_row.draw.connect(_draw_upgrades_row)
@@ -125,8 +132,54 @@ func banner(text: String, color: Color, hold: float = 1.2) -> void:
 	_banner_tw.tween_interval(hold)
 	_banner_tw.tween_property(_banner, "modulate:a", 0.0, 0.4)
 
+## Apresentação do chefe (pausa ~3s) e depois a música de luta.
+func boss_intro(enemy: Enemy) -> void:
+	var intro := BossIntro.new()
+	intro.boss_name = enemy.display_name
+	intro.subtitle = enemy.intro_subtitle
+	intro.color = enemy.intro_color
+	intro.portrait = enemy.portrait_tex if enemy.portrait_tex else enemy.sprite_tex
+	intro.finished.connect(func():
+		get_tree().paused = false
+		play_boss_music(enemy.boss_music))
+	add_child(intro)
+	move_child(fade, get_child_count() - 1)
+	get_tree().paused = true
+
+var _music: AudioStreamPlayer
+
+## Toca a música do chefe em loop (arquivo .ogg/.mp3/.wav em assets/music/).
+func play_boss_music(base_path: String) -> void:
+	var stream: AudioStream = null
+	for ext in ["ogg", "mp3", "wav"]:
+		if ResourceLoader.exists(base_path + "." + ext):
+			stream = load(base_path + "." + ext)
+			break
+	if stream == null:
+		return
+	if stream is AudioStreamMP3 or stream is AudioStreamOggVorbis:
+		stream.loop = true
+	_music = AudioStreamPlayer.new()
+	_music.stream = stream
+	_music.bus = &"Music"
+	_music.volume_db = -30.0
+	add_child(_music)
+	_music.play()
+	create_tween().tween_property(_music, "volume_db", -4.0, 0.6)
+
+func stop_music(fade_time: float = 1.2) -> void:
+	if _music == null:
+		return
+	var m := _music
+	_music = null
+	var tw := create_tween()
+	tw.tween_property(m, "volume_db", -40.0, fade_time)
+	tw.tween_callback(m.queue_free)
+
 ## Barra de vida do chefe embaixo da tela. Some sozinha quando ele cai.
 func show_boss(enemy: Node) -> void:
+	if enemy.has_signal("died"):
+		enemy.died.connect(func(_e): stop_music(), CONNECT_ONE_SHOT)
 	if _boss_bar == null:
 		_boss_bar = BossBar.new()
 		add_child(_boss_bar)
@@ -154,11 +207,27 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		var inv := Inventory.new()
 		inv.player = _level.player
-		inv.floor_text = "%dº ANDAR" % FloorLevel.floor_num
+		inv.floor_text = "%dº ANDAR  ·  %d MOEDAS" % [FloorLevel.floor_num, Wallet.coins]
 		add_child(inv)
 		move_child(fade, get_child_count() - 1)
 		get_tree().paused = true
 		Sfx.play(self, "menu", 0.0)
+
+## Contador de moedas (pulinho quando ganha).
+func refresh_coins(gained: bool = true) -> void:
+	if gained:
+		_coin_pop = 1.0
+		create_tween().tween_property(self, "_coin_pop", 0.0, 0.25)
+	_coins.queue_redraw()
+
+func _process(_delta: float) -> void:
+	if _coin_pop > 0.0:
+		_coins.queue_redraw()
+
+func _draw_coins() -> void:
+	var lift := roundf(_coin_pop * 3.0)
+	Wallet.draw_coin(_coins, Vector2(5, 6 - lift), 1.0)
+	Fx.ui_text(_coins, Vector2(14, 10 - lift), str(Wallet.coins), Color("ffd966"), 9, -1, HORIZONTAL_ALIGNMENT_LEFT, "black")
 
 ## Ícones dos upgrades pegos, embaixo dos corações (com "x2" se repetiu).
 func refresh_upgrades() -> void:
