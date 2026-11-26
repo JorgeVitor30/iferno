@@ -1,8 +1,8 @@
 class_name Sfx
 extends RefCounted
-## Sons curtos sintetizados na hora (sem arquivos de áudio ainda).
-## Uso: Sfx.play(self, "hit"). Cada som é gerado uma vez e fica em cache.
-## Quando existirem arquivos em assets/sfx/<nome>.wav/.ogg, eles têm prioridade.
+## Efeitos sonoros do jogo; usa assets/sfx/<nome>.wav/.ogg quando disponíveis.
+## Sons sem arquivo correspondente são sintetizados e ficam em cache.
+## Uso: Sfx.play(self, "hit").
 
 ## nome -> [freq inicial, freq final, duração, volume, ruído (0..1), forma ("sin"/"sq")]
 const DEFS := {
