@@ -230,7 +230,7 @@ func spawn_decal(kind: String, color: Color, pos: Vector2 = position) -> void:
 
 func _draw() -> void:
 	# Sombra
-	Fx.contact_shadow(self, Vector2(0, 2), (shadow_r + 3.0) * body_scale, 1.6)
+	Fx.contact_shadow(self, Vector2(0, 0), (shadow_r + 2.0) * body_scale, 1.6)
 	if _spawn_t > 0.0:
 		draw_set_transform(Vector2.ZERO)
 		_draw_spawn()

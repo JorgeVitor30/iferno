@@ -68,7 +68,7 @@ func _f(x: float, y: float, w: float, h: float, c: Color) -> void:
 	draw_rect(Rect2(x * 2, y * 2, w * 2, h * 2), c)
 
 func _draw() -> void:
-	Fx.contact_shadow(self, Vector2(2, 1), 24.0, 1.4)
+	Fx.contact_shadow(self, Vector2(1, -2), 24.0, 1.4, 6.0)
 	# surge de baixo pra cima com um quique
 	var pop := 1.0 - pow(1.0 - _appear, 3.0)
 	var bob := 0.0 if _open else roundf(sin(_t * 3.0) * 0.5)
