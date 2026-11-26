@@ -6,108 +6,65 @@ extends Control
 
 signal picked(id: String)
 
-const CARD := Vector2(156, 176)
-const LINE := 19.0 # altura de uma linha da fonte pixel
-const GAP := 14.0
-const TOP := 86.0
-const FILL := Color("1d1229")
-const FILL_HOVER := Color("2a1c3a")
+const CARD := Vector2(164, 200)
+const GAP := 16.0
+const TOP := 82.0
 
 var options: Array[String] = []
+var _cards: Array[UpgradeCard] = []
 var _hover := -1
-var _labels: Array[Label] = []
 var _t := 0.0
-var _ready_t := 0.35 # ignora cliques logo que abre (evita escolher sem querer atirando)
+var _ready_t := 0.45 # ignora cliques logo que abre (evita escolher sem querer atirando)
 var _done := false
+var _title: Label
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	var title := _label("ESCOLHA UM UPGRADE", Fx.BIG, Color("ffd966"))
-	title.position = Vector2(0, 40)
-	title.size = Vector2(640, 26)
-	var hint := _label("CLIQUE OU APERTE 1, 2, 3", Fx.SMALL, Color("9a8aa8"))
-	hint.position = Vector2(0, TOP + CARD.y + 10)
+	_title = UpgradeCard.label(self, "ESCOLHA UM UPGRADE", Fx.BIG, Color("ffd966"), 4)
+	_title.position = Vector2(0, 30)
+	_title.size = Vector2(640, 26)
+	var hint := UpgradeCard.label(self, "CLIQUE OU APERTE 1, 2, 3", Fx.SMALL, Color("8a7a98"))
+	hint.position = Vector2(0, TOP + CARD.y + 16)
 	hint.size = Vector2(640, 14)
-	for i in options.size():
-		var id := options[i]
-		var d: Dictionary = Upgrades.DEFS[id]
-		var r := _card_rect(i)
-		var name_l := _label(d["name"], Fx.SMALL, d["color"].lightened(0.35))
-		name_l.position = Vector2(r.position.x, r.position.y + 56)
-		name_l.size = Vector2(r.size.x, LINE)
-		var name_lines := String(d["name"]).count("\n") + 1
-		var desc_l := _label(d["desc"], Fx.SMALL, Color("e8e0d8"))
-		desc_l.position = Vector2(r.position.x, name_l.position.y + name_lines * LINE + 6)
-		desc_l.size = Vector2(r.size.x, LINE)
-		_labels.append(name_l)
-		_labels.append(desc_l)
-		var mx: int = d["max"]
-		if mx > 0:
-			var lvl := _label("%d/%d" % [Upgrades.count(id), mx], Fx.SMALL, Color("6a5a7a"))
-			lvl.position = Vector2(r.position.x, r.end.y - 18)
-			lvl.size = Vector2(r.size.x - 8, 14)
-			lvl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-			_labels.append(lvl)
-		var key := _label(str(i + 1), Fx.SMALL, Color("6a5a7a"))
-		key.position = Vector2(r.position.x + 8, r.end.y - 18)
-		key.size = Vector2(20, 14)
-		key.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		_labels.append(key)
-		for l in _labels:
-			if not l.has_meta("card"):
-				l.set_meta("card", i)
-				l.set_meta("y", l.position.y)
-	# entra de baixo com fade
-	modulate.a = 0.0
-	position.y = 12
-	var tw := create_tween()
-	tw.tween_property(self, "modulate:a", 1.0, 0.2)
-	tw.parallel().tween_property(self, "position:y", 0.0, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-
-func _label(text: String, size: int, color: Color) -> Label:
-	var l := Label.new()
-	l.text = text
-	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	l.add_theme_font_size_override("font_size", size)
-	l.add_theme_color_override("font_color", color)
-	l.add_theme_color_override("font_outline_color", Fx.OUTLINE)
-	l.add_theme_constant_override("outline_size", 4 if size >= Fx.BIG else 2)
-	add_child(l)
-	return l
-
-func _card_rect(i: int) -> Rect2:
 	var total := options.size() * CARD.x + (options.size() - 1) * GAP
 	var x0 := roundf((640.0 - total) / 2.0)
-	var r := Rect2(Vector2(x0 + i * (CARD.x + GAP), TOP), CARD)
-	if i == _hover:
-		r.position.y -= 4
-	return r
+	for i in options.size():
+		var c := UpgradeCard.new()
+		c.id = options[i]
+		c.key = i + 1
+		c.size = CARD
+		c.base_pos = Vector2(x0 + i * (CARD.x + GAP), TOP)
+		c.position = c.base_pos + Vector2(0, 40)
+		c.modulate.a = 0.0
+		add_child(c)
+		_cards.append(c)
+		# entrada em sequência, de baixo pra cima
+		var tw := c.create_tween()
+		tw.tween_interval(0.06 * i)
+		tw.tween_property(c, "position:y", TOP, 0.32).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.parallel().tween_property(c, "modulate:a", 1.0, 0.2)
+		tw.tween_callback(func(): c.entered = true)
+	modulate.a = 0.0
+	create_tween().tween_property(self, "modulate:a", 1.0, 0.15)
 
 func _process(delta: float) -> void:
 	_t += delta
 	_ready_t -= delta
 	var m := get_local_mouse_position()
 	var h := -1
-	for i in options.size():
-		var r := _card_rect(i)
-		r.position.y = TOP - 4
-		r.size.y += 4
-		if r.has_point(m):
+	for i in _cards.size():
+		if Rect2(_cards[i].base_pos - Vector2(0, 8), CARD + Vector2(0, 8)).has_point(m):
 			h = i
-	if h != _hover:
-		_set_hover(h)
+	if h != _hover and not _done:
+		_hover = h
+		for i in _cards.size():
+			_cards[i].set_hover(i == h)
+		if h >= 0:
+			Sfx.play(self, "hover", 0.0)
+	_title.position.y = 30 + roundf(sin(_t * 2.5) * 1.5)
 	queue_redraw()
-
-func _set_hover(h: int) -> void:
-	_hover = h
-	if h >= 0:
-		Sfx.play(self, "hover", 0.0)
-	# textos acompanham o cartão que sobe
-	for l in _labels:
-		l.position.y = float(l.get_meta("y")) - (4.0 if int(l.get_meta("card")) == h else 0.0)
 
 func _input(event: InputEvent) -> void:
 	if _done or _ready_t > 0.0:
@@ -126,26 +83,144 @@ func _choose(i: int) -> void:
 	_done = true
 	Sfx.play(self, "upgrade", 0.0)
 	picked.emit(options[i])
-	var tw := create_tween()
-	tw.tween_property(self, "modulate:a", 0.0, 0.15)
-	tw.tween_callback(queue_free)
+	# carta escolhida pisca e sobe; as outras afundam
+	for j in _cards.size():
+		var c := _cards[j]
+		var tw := c.create_tween()
+		if j == i:
+			c.chosen = true
+			tw.tween_property(c, "position:y", TOP - 14, 0.18).set_ease(Tween.EASE_OUT)
+		else:
+			tw.tween_property(c, "position:y", TOP + 30, 0.18)
+			tw.parallel().tween_property(c, "modulate:a", 0.0, 0.15)
+	var tw2 := create_tween()
+	tw2.tween_interval(0.3)
+	tw2.tween_property(self, "modulate:a", 0.0, 0.18)
+	tw2.tween_callback(queue_free)
 
 func _draw() -> void:
-	draw_rect(Rect2(-position, Vector2(640, 360)), Color(0.03, 0.01, 0.06, 0.72))
-	for i in options.size():
-		var id := options[i]
-		var c: Color = Upgrades.DEFS[id]["color"]
-		var r := _card_rect(i)
-		var hov := i == _hover
-		# moldura: contorno escuro + borda na cor do item (pisca de leve no hover)
+	# fundo escurecido com vinheta em degraus
+	draw_rect(Rect2(Vector2.ZERO, Vector2(640, 360)), Color(0.03, 0.01, 0.06, 0.7))
+	for i in 4:
+		var g := 6.0 + i * 8.0
+		draw_rect(Rect2(0, 0, 640, g), Color(0, 0, 0, 0.12))
+		draw_rect(Rect2(0, 360 - g, 640, g), Color(0, 0, 0, 0.12))
+	# enfeite do título: linhas com losango nas pontas
+	var y := 64.0
+	for side: float in [-1.0, 1.0]:
+		var x_in := 320.0 + side * 132.0
+		var x_out := 320.0 + side * 230.0
+		draw_rect(Rect2(minf(x_in, x_out), y, absf(x_out - x_in), 1), Color("6a4a2a"))
+		draw_rect(Rect2(x_out - 2, y - 2, 5, 5), Color("ffd966"))
+		draw_rect(Rect2(x_out - 1, y - 1, 3, 3), Color("6a4a2a"))
+
+
+## Uma carta de upgrade (desenhada em código, com os textos como Labels filhos).
+class UpgradeCard extends Control:
+	var id := ""
+	var key := 1
+	var base_pos := Vector2.ZERO
+	var chosen := false
+	var entered := false # terminou a animação de entrada
+	var _hover := false
+	var _t := 0.0
+	var _lift := 0.0
+
+	static func label(parent: Node, text: String, size: int, color: Color, outline: int = 2) -> Label:
+		var l := Label.new()
+		l.text = text
+		l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		l.add_theme_font_size_override("font_size", size)
+		l.add_theme_color_override("font_color", color)
+		l.add_theme_color_override("font_outline_color", Fx.OUTLINE)
+		l.add_theme_constant_override("outline_size", outline)
+		parent.add_child(l)
+		return l
+
+	func _ready() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var d: Dictionary = Upgrades.DEFS[id]
+		var c: Color = d["color"]
+		var tag := label(self, d["tag"], Fx.SMALL, c.lightened(0.5))
+		tag.position = Vector2(0, 76)
+		tag.size = Vector2(size.x, 14)
+		var name_l := label(self, d["name"], Fx.SMALL, Color("fff4dc"))
+		name_l.position = Vector2(0, 98)
+		name_l.size = Vector2(size.x, 19)
+		var lines := String(d["name"]).count("\n") + 1
+		var desc := label(self, d["desc"], Fx.SMALL, Color("c8bcd4"))
+		desc.position = Vector2(0, 98 + lines * 19 + 10)
+		desc.size = Vector2(size.x, 19)
+		var k := label(self, str(key), Fx.SMALL, Color("fff4dc"))
+		k.position = Vector2(6, size.y - 21)
+		k.size = Vector2(14, 14)
+
+	func set_hover(on: bool) -> void:
+		_hover = on
+		var tw := create_tween()
+		tw.tween_property(self, "_lift", 8.0 if on else 0.0, 0.12).set_ease(Tween.EASE_OUT)
+
+	func _process(delta: float) -> void:
+		_t += delta
+		if entered and not chosen:
+			position.y = base_pos.y - roundf(_lift)
+		queue_redraw()
+
+	func _draw() -> void:
+		var d: Dictionary = Upgrades.DEFS[id]
+		var c: Color = d["color"]
+		var r := Rect2(Vector2.ZERO, size)
+		var white := chosen and int(_t * 16.0) % 2 == 0
+		# sombra embaixo (fica maior quando a carta sobe)
+		draw_rect(Rect2(4, size.y + 2 + _lift, size.x - 4, 4), Color(0, 0, 0, 0.35))
+		# moldura
 		draw_rect(r.grow(2), Fx.OUTLINE)
-		var border := c if hov else Color("473955")
-		if hov and int(_t * 6.0) % 2 == 0:
-			border = c.lightened(0.3)
+		var border := Color.WHITE if white else (c if _hover else Color("473955"))
 		draw_rect(r.grow(1), border)
-		draw_rect(r, FILL_HOVER if hov else FILL)
-		draw_rect(Rect2(r.position, Vector2(r.size.x, 1)), Color(1, 1, 1, 0.08))
-		# ícone 2x num "pedestal"
-		var ic := Vector2(r.get_center().x - 16, r.position.y + 12)
-		draw_rect(Rect2(ic - Vector2(4, 4), Vector2(40, 40)), Color(0, 0, 0, 0.25))
-		Upgrades.draw_icon(self, id, ic, 2.0)
+		draw_rect(r, Color("1a1026"))
+		# cabeçalho na cor do item com pontilhado
+		var head := Rect2(2, 2, size.x - 4, 68)
+		var hc := c.darkened(0.55)
+		draw_rect(head, hc)
+		for y in range(int(head.position.y), int(head.end.y), 2):
+			for x in range(int(head.position.x) + (y / 2) % 2 * 2, int(head.end.x), 4):
+				draw_rect(Rect2(x, y, 1, 1), hc.lightened(0.12))
+		draw_rect(Rect2(head.position.x, head.end.y, head.size.x, 1), c.darkened(0.2))
+		draw_rect(Rect2(head.position.x, head.position.y, head.size.x, 1), hc.lightened(0.3))
+		# brilho atrás do ícone (anéis) e ícone 3x flutuando
+		var center := Vector2(size.x / 2.0, 36)
+		var pulse := 1.0 + (0.25 if _hover else 0.0) + sin(_t * 3.0) * 0.08
+		for i in 3:
+			draw_circle(center, (30.0 - i * 8.0) * pulse, Color(c, 0.08 + i * 0.05))
+		var bob := roundf(sin(_t * 3.0 + key) * (2.0 if _hover else 1.0))
+		Upgrades.draw_icon(self, id, center - Vector2(24, 24 - bob), 3.0)
+		# etiqueta da categoria
+		var tw := Fx.text_width(d["tag"]) + 10.0
+		var tag_r := Rect2(size.x / 2.0 - tw / 2.0, 76, tw, 15)
+		draw_rect(tag_r.grow(1), Fx.OUTLINE)
+		draw_rect(tag_r, c.darkened(0.6))
+		# divisória com losango
+		var lines := String(d["name"]).count("\n") + 1
+		var dy := 98.0 + lines * 19.0 + 4.0
+		draw_rect(Rect2(20, dy, size.x - 40, 1), Color("3a2c48"))
+		draw_rect(Rect2(size.x / 2.0 - 2, dy - 2, 5, 5), c)
+		# tecla
+		draw_rect(Rect2(5, size.y - 22, 16, 17), Fx.OUTLINE)
+		draw_rect(Rect2(6, size.y - 21, 14, 15), Color("3a2c48"))
+		# nível: quadradinhos (cheio = já tem, piscando = o que vai ganhar)
+		var mx: int = d["max"]
+		if mx > 0:
+			var n := Upgrades.count(id)
+			for i in mx:
+				var px := size.x - 12.0 - (mx - 1 - i) * 10.0
+				var pr := Rect2(px - 3, size.y - 17, 7, 7)
+				draw_rect(pr.grow(1), Fx.OUTLINE)
+				var col := Color("2a1f38")
+				if i < n:
+					col = c
+				elif i == n and int(_t * 4.0) % 2 == 0:
+					col = c.lightened(0.4)
+				draw_rect(pr, col)
+		if white:
+			draw_rect(r, Color(1, 1, 1, 0.25))

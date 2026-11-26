@@ -15,6 +15,7 @@ var _banner := Label.new()
 var _hurt := ColorRect.new()
 var _upgrades_row := Control.new()
 var _map: Control
+var _level: Node
 var _boss_bar: BossBar
 var _banner_tw: Tween
 var _title_tw: Tween
@@ -57,6 +58,7 @@ func _style(l: Label, size: int, color: Color) -> void:
 	l.add_theme_constant_override("outline_size", 4 if size >= 18 else 2)
 
 func setup(level: Node) -> void:
+	_level = level
 	_map = MINIMAP.new()
 	_map.level = level
 	_map.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -136,6 +138,18 @@ func show_upgrades(options: Array[String], on_pick: Callable) -> void:
 	add_child(pick)
 	move_child(fade, get_child_count() - 1)
 	get_tree().paused = true
+
+## TAB abre a mochila (pausa o jogo). Quem fecha é o próprio Inventory.
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("inventory") and not get_tree().paused and _level and _level.player.hp > 0:
+		get_viewport().set_input_as_handled()
+		var inv := Inventory.new()
+		inv.player = _level.player
+		inv.floor_text = "%dº ANDAR" % FloorLevel.floor_num
+		add_child(inv)
+		move_child(fade, get_child_count() - 1)
+		get_tree().paused = true
+		Sfx.play(self, "menu", 0.0)
 
 ## Ícones dos upgrades pegos, embaixo dos corações (com "x2" se repetiu).
 func refresh_upgrades() -> void:

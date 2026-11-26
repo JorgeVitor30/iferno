@@ -8,16 +8,16 @@ extends RefCounted
 
 const ROOMS_PER_PICK := 2
 
-## id -> nome, descrição, cor do ícone e máximo de vezes que pode pegar (0 = sem limite)
+## id -> categoria, nome, descrição, cor do ícone e máximo de vezes que pode pegar (0 = sem limite)
 const DEFS := {
-	"cafe": {"name": "CAFÉ DUPLO", "desc": "Cura 1 de vida e deixa\nmais rápido por 8s.", "color": Color("b5452f"), "max": 0},
-	"calculadora": {"name": "CALCULADORA\nCIENTÍFICA", "desc": "Tiros atravessam\n+1 inimigo.", "color": Color("6a8ab0"), "max": 3},
-	"grampeador": {"name": "GRAMPEADOR", "desc": "+1 de dano, mas\natira 20% mais devagar.", "color": Color("d04040"), "max": 3},
-	"mochila": {"name": "MOCHILA PESADA", "desc": "+1 coração, mas\nanda 8% mais devagar.", "color": Color("4a7a4a"), "max": 3},
-	"monitoria": {"name": "MONITORIA", "desc": "Espera do dodge\ncai pela metade.", "color": Color("e0b040"), "max": 2},
-	"apostila": {"name": "APOSTILA", "desc": "+1 projétil por tiro\n(em leque).", "color": Color("e8e0d8"), "max": 3},
-	"wifi": {"name": "WI-FI DA\nFACULDADE", "desc": "Tiros perseguem um\npouco os inimigos.", "color": Color("40b0d0"), "max": 3},
-	"caneta": {"name": "CANETA VERMELHA", "desc": "+15% de chance de\ncrítico (dano x2).", "color": Color("ff3a3a"), "max": 3},
+	"cafe": {"tag": "CONSUMÍVEL", "name": "CAFÉ DUPLO", "desc": "Cura 1 de vida e deixa\nmais rápido por 8s.", "color": Color("b5452f"), "max": 0},
+	"calculadora": {"tag": "TIRO", "name": "CALCULADORA\nCIENTÍFICA", "desc": "Tiros atravessam\n+1 inimigo.", "color": Color("6a8ab0"), "max": 3},
+	"grampeador": {"tag": "DANO", "name": "GRAMPEADOR", "desc": "+1 de dano, mas\natira 20% mais devagar.", "color": Color("d04040"), "max": 3},
+	"mochila": {"tag": "DEFESA", "name": "MOCHILA PESADA", "desc": "+1 coração, mas\nanda 8% mais devagar.", "color": Color("4a7a4a"), "max": 3},
+	"monitoria": {"tag": "MOBILIDADE", "name": "MONITORIA", "desc": "Espera do dodge\ncai pela metade.", "color": Color("e0b040"), "max": 2},
+	"apostila": {"tag": "TIRO", "name": "APOSTILA", "desc": "+1 projétil por tiro\n(em leque).", "color": Color("e8e0d8"), "max": 3},
+	"wifi": {"tag": "TIRO", "name": "WI-FI DA\nFACULDADE", "desc": "O sinal rebate: tiros\nricocheteiam +1 vez.", "color": Color("40b0d0"), "max": 3},
+	"caneta": {"tag": "DANO", "name": "CANETA VERMELHA", "desc": "+15% de chance de\ncrítico (dano x2).", "color": Color("ff3a3a"), "max": 3},
 }
 
 static var taken := {} # id -> quantas vezes pegou
@@ -57,7 +57,7 @@ static func apply_stats(p: Node) -> void:
 	p.bullet_damage = 1 + count("grampeador")
 	p.bullet_pierce = count("calculadora")
 	p.bullet_count = 1 + count("apostila")
-	p.bullet_homing = 2.5 * count("wifi")
+	p.bullet_bounces = count("wifi")
 	p.crit_chance = 0.15 * count("caneta")
 
 ## Pega o upgrade: guarda e já aplica no jogador.
