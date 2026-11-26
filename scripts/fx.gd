@@ -15,6 +15,43 @@ const CAP_RIM := Color("2a1f38")
 const SMALL := 11 # tamanho normal da fonte pixel (ver scripts/pixel_font.gd)
 const BIG := 22   # 2x, pra faixas grandes
 
+## Fonte da interface (menus, cartas, mochila, HUD): Noto Sans, lisa e nítida.
+## O mundo continua pixel art; só os textos de interface usam essa.
+## peso: "regular", "semibold", "bold", "black".
+const UI_FONTS := {
+	"regular": preload("res://assets/fonts/ui/NotoSans-Regular.ttf"),
+	"semibold": preload("res://assets/fonts/ui/NotoSans-SemiBold.ttf"),
+	"bold": preload("res://assets/fonts/ui/NotoSans-Bold.ttf"),
+	"black": preload("res://assets/fonts/ui/NotoSans-Black.ttf"),
+}
+
+static func ui_font(weight: String = "semibold") -> Font:
+	return UI_FONTS[weight]
+
+## Label de interface pronto (fonte lisa, contorno escuro opcional).
+static func ui_label(parent: Node, text: String, size: int, color: Color, weight: String = "semibold",
+		outline: int = 0, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_CENTER) -> Label:
+	var l := Label.new()
+	l.text = text
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	l.horizontal_alignment = align
+	l.add_theme_font_override("font", ui_font(weight))
+	l.add_theme_font_size_override("font_size", size)
+	l.add_theme_color_override("font_color", color)
+	if outline > 0:
+		l.add_theme_color_override("font_outline_color", OUTLINE)
+		l.add_theme_constant_override("outline_size", outline)
+	parent.add_child(l)
+	return l
+
+## Texto de interface desenhado direto num _draw().
+static func ui_text(ci: CanvasItem, pos: Vector2, s: String, color: Color, size: int = 8,
+		width: float = -1.0, align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT, weight: String = "semibold") -> void:
+	ci.draw_string(ui_font(weight), pos, s, align, width, size, color)
+
+static func ui_width(s: String, size: int, weight: String = "semibold") -> float:
+	return ui_font(weight).get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
+
 ## A fonte pixel só fica nítida em múltiplos do tamanho base: arredonda pra 11 ou 22.
 static func px(size: int) -> int:
 	return BIG if size >= 18 else SMALL

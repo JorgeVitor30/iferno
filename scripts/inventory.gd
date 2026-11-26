@@ -24,19 +24,11 @@ func _ready() -> void:
 	tw.tween_property(self, "modulate:a", 1.0, 0.12)
 	tw.parallel().tween_property(self, "position:y", 0.0, 0.15).set_ease(Tween.EASE_OUT)
 
-func _lbl(text: String, pos: Vector2, color: Color, size: int = Fx.SMALL,
-		align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT, w: float = 200.0) -> Label:
-	var l := Label.new()
-	l.text = text
+func _lbl(text: String, pos: Vector2, color: Color, size: int = 8,
+		align: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT, w: float = 200.0, weight: String = "semibold") -> Label:
+	var l := Fx.ui_label(self, text, size, color, weight, 0, align)
 	l.position = pos
-	l.size = Vector2(w, 14)
-	l.horizontal_alignment = align
-	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	l.add_theme_font_size_override("font_size", size)
-	l.add_theme_color_override("font_color", color)
-	l.add_theme_color_override("font_outline_color", Fx.OUTLINE)
-	l.add_theme_constant_override("outline_size", 4 if size >= Fx.BIG else 2)
-	add_child(l)
+	l.size = Vector2(w, 12)
 	return l
 
 ## Linhas de números: [nome, valor em texto, comparação com o base (+1 melhor, -1 pior, 0 igual)]
@@ -59,15 +51,15 @@ func _stats() -> Array:
 	]
 
 func _build() -> void:
-	_lbl("MOCHILA", Vector2(PANEL.position.x, PANEL.position.y + 8), Color("ffd966"), Fx.BIG,
-		HORIZONTAL_ALIGNMENT_CENTER, PANEL.size.x)
+	_lbl("MOCHILA", Vector2(PANEL.position.x, PANEL.position.y + 5), Color("ffd966"), 18,
+		HORIZONTAL_ALIGNMENT_CENTER, PANEL.size.x, "black")
 	_lbl(floor_text, Vector2(PANEL.position.x + 12, PANEL.position.y + 10), Color("8a7a98"))
-	_lbl("TAB FECHA", Vector2(PANEL.end.x - 112, PANEL.position.y + 10), Color("8a7a98"),
-		Fx.SMALL, HORIZONTAL_ALIGNMENT_RIGHT, 100)
+	_lbl("TAB fecha", Vector2(PANEL.end.x - 112, PANEL.position.y + 10), Color("8a7a98"),
+		8, HORIZONTAL_ALIGNMENT_RIGHT, 100)
 	# coluna da esquerda: números
 	var x := PANEL.position.x + 16
 	var y := PANEL.position.y + 50
-	_lbl("ESTUDANTE", Vector2(x, y), Color("c8bcd4"))
+	_lbl("ESTUDANTE", Vector2(x, y), Color("c8bcd4"), 9, HORIZONTAL_ALIGNMENT_LEFT, 200, "black")
 	y += 24
 	for st: Array in _stats():
 		var col := Color("e8e0d8")
@@ -76,23 +68,23 @@ func _build() -> void:
 		elif st[2] < 0:
 			col = BAD
 		_lbl(st[0], Vector2(x, y), Color("9a8aa8"))
-		_lbl(st[1], Vector2(x, y), col, Fx.SMALL, HORIZONTAL_ALIGNMENT_RIGHT, SPLIT - 32)
+		_lbl(st[1], Vector2(x, y), col, 8, HORIZONTAL_ALIGNMENT_RIGHT, SPLIT - 32, "bold")
 		y += 21
 	# coluna da direita: upgrades
 	var rx := PANEL.position.x + SPLIT + 16
 	var ry := PANEL.position.y + 50
-	_lbl("UPGRADES", Vector2(rx, ry), Color("c8bcd4"))
+	_lbl("UPGRADES", Vector2(rx, ry), Color("c8bcd4"), 9, HORIZONTAL_ALIGNMENT_LEFT, 200, "black")
 	ry += 24
 	var ids := _owned()
 	if ids.is_empty():
-		_lbl("Nada ainda. Limpe salas pra\nganhar upgrades!", Vector2(rx, ry + 6), Color("6a5a7a"), Fx.SMALL,
+		_lbl("Nada ainda. Limpe salas pra\nganhar upgrades!", Vector2(rx, ry + 6), Color("6a5a7a"), 8,
 			HORIZONTAL_ALIGNMENT_LEFT, 300)
 	for id in ids:
 		var d: Dictionary = Upgrades.DEFS[id]
 		var n := Upgrades.count(id)
 		var title := String(d["name"]).replace("\n", " ") + ("  x%d" % n if n > 1 else "")
-		_lbl(title, Vector2(rx + 40, ry), (d["color"] as Color).lightened(0.4), Fx.SMALL, HORIZONTAL_ALIGNMENT_LEFT, 280)
-		_lbl(String(d["desc"]).replace("\n", " "), Vector2(rx + 40, ry + 15), Color("b0a4bc"), Fx.SMALL,
+		_lbl(title, Vector2(rx + 40, ry + 1), (d["color"] as Color).lightened(0.4), 9, HORIZONTAL_ALIGNMENT_LEFT, 280, "black")
+		_lbl(String(d["desc"]).replace("\n", " "), Vector2(rx + 40, ry + 16), Color("b0a4bc"), 8,
 			HORIZONTAL_ALIGNMENT_LEFT, 290)
 		ry += 34
 

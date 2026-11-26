@@ -79,11 +79,14 @@ func _generate() -> void:
 				continue
 			links.append([c, nb])
 	var far := _farthest(cells, links)
+	var trap := _pick_challenge(cells, links, far)
 	var pool: Array = []
 	for c in cells:
 		var k := "hall"
 		if c == far:
 			k = "auditorio" # sala do chefe
+		elif c == trap:
+			k = "desafio" # sala de prova surpresa (ondas + baú)
 		elif c != Vector2i.ZERO:
 			if pool.is_empty():
 				pool = ROOM_POOL.duplicate()
@@ -97,7 +100,7 @@ func _generate() -> void:
 	# Elite (coordenadora) escondida em salas comuns sorteadas
 	var normal: Array = []
 	for c in cells:
-		if c != Vector2i.ZERO and c != far:
+		if c != Vector2i.ZERO and c != far and c != trap:
 			normal.append(c)
 	normal.shuffle()
 	for i in mini(1 + int(floor_num >= 3), normal.size()):
@@ -113,6 +116,28 @@ func _generate() -> void:
 	for l: Array in links:
 		_build_corridor(rooms[l[0]], rooms[l[1]])
 	_add_background()
+
+## Uma sala de desafio por andar: de preferência num beco sem saída
+## (não atrapalha o caminho até o chefe; entra quem quer).
+func _pick_challenge(cells: Array[Vector2i], links: Array, far: Vector2i) -> Vector2i:
+	var dead_ends: Array[Vector2i] = []
+	var others: Array[Vector2i] = []
+	for c in cells:
+		if c == Vector2i.ZERO or c == far:
+			continue
+		var deg := 0
+		for l: Array in links:
+			if l[0] == c or l[1] == c:
+				deg += 1
+		if deg == 1:
+			dead_ends.append(c)
+		else:
+			others.append(c)
+	if not dead_ends.is_empty():
+		return dead_ends.pick_random()
+	if not others.is_empty():
+		return others.pick_random()
+	return Vector2i(9999, 9999) # andar pequeno demais: sem desafio
 
 func _linked(links: Array, a: Vector2i, b: Vector2i) -> bool:
 	for l: Array in links:
@@ -226,18 +251,28 @@ func _on_room_entered(room: Room) -> void:
 		hud.set_title(room.title)
 	hud.refresh_map()
 
+## O baú da sala de desafio foi aberto: escolha entre 3 upgrades raros.
+func open_chest() -> void:
+	if player.hp <= 0 or _leaving:
+		return
+	hud.show_upgrades(Upgrades.roll_rare(3), _on_upgrade_picked, "BAÚ DO DESAFIO")
+
+func _on_upgrade_picked(id: String) -> void:
+	Upgrades.take(id, player)
+	player.hold_fire(0.25)
+	Fx.float_text(entities, player.global_position + Vector2(0, -44),
+		String(Upgrades.DEFS[id]["name"]).replace("\n", " ") + "!", Color("ffd966"))
+
 func _on_room_cleared(room: Room) -> void:
 	hud.refresh_map()
+	if room.is_challenge():
+		return # a recompensa é o baú
 	if not Upgrades.room_cleared(room.is_boss_room()):
 		return
 	await get_tree().create_timer(1.2).timeout # deixa a faixa "AULA DISPENSADA" aparecer
 	if player.hp <= 0 or _leaving:
 		return
-	hud.show_upgrades(Upgrades.roll(3), func(id: String):
-		Upgrades.take(id, player)
-		player.hold_fire(0.25)
-		Fx.float_text(entities, player.global_position + Vector2(0, -44),
-			String(Upgrades.DEFS[id]["name"]).replace("\n", " ") + "!", Color("ffd966")))
+	hud.show_upgrades(Upgrades.roll(3), _on_upgrade_picked)
 
 func _on_health_changed(hp: int, max_hp: int) -> void:
 	hud.set_health(hp, max_hp)

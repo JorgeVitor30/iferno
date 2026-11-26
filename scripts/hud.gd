@@ -51,11 +51,14 @@ func _ready() -> void:
 
 func _style(l: Label, size: int, color: Color) -> void:
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	l.add_theme_font_override("font", ThemeDB.fallback_font)
-	l.add_theme_font_size_override("font_size", Fx.px(size))
+	var big := size >= 18
+	l.add_theme_font_override("font", Fx.ui_font("black" if big else "bold"))
+	l.add_theme_font_size_override("font_size", size if big else 9)
 	l.add_theme_color_override("font_color", color)
 	l.add_theme_color_override("font_outline_color", OUTLINE)
-	l.add_theme_constant_override("outline_size", 4 if size >= 18 else 2)
+	l.add_theme_constant_override("outline_size", 6 if big else 3)
+	if big:
+		l.add_theme_constant_override("line_spacing", -4)
 
 func setup(level: Node) -> void:
 	_level = level
@@ -101,6 +104,11 @@ func set_counter(n: int) -> void:
 		_counter.scale = Vector2(1.3, 1.3)
 		create_tween().tween_property(_counter, "scale", Vector2.ONE, 0.15)
 
+## Contador com texto livre (ex.: "RODADA 2/5 · INIMIGOS: 3").
+func set_counter_text(t: String) -> void:
+	_counter.visible = true
+	_counter.text = t
+
 ## Faixa grande no meio da tela que "pula" e some.
 func banner(text: String, color: Color, hold: float = 1.2) -> void:
 	_banner.text = text
@@ -126,11 +134,12 @@ func show_boss(enemy: Node) -> void:
 	_boss_bar.track(enemy)
 
 ## Pausa o jogo e mostra a escolha de upgrade. Chama on_pick(id) quando escolher.
-func show_upgrades(options: Array[String], on_pick: Callable) -> void:
+func show_upgrades(options: Array[String], on_pick: Callable, title: String = "ESCOLHA UM UPGRADE") -> void:
 	if options.is_empty():
 		return
 	var pick := UpgradePick.new()
 	pick.options = options
+	pick.title_text = title
 	pick.picked.connect(func(id: String):
 		get_tree().paused = false
 		on_pick.call(id)
@@ -163,7 +172,7 @@ func _draw_upgrades_row() -> void:
 		Upgrades.draw_icon(_upgrades_row, id, Vector2(x, 0))
 		var n := Upgrades.count(id)
 		if n > 1:
-			Fx.text(_upgrades_row, Vector2(x + 13, 17), "x%d" % n, Color("f4e4c0"), Fx.SMALL)
+			Fx.ui_text(_upgrades_row, Vector2(x + 14, 17), "x%d" % n, Color("f4e4c0"), 8, -1, HORIZONTAL_ALIGNMENT_LEFT, "bold")
 			x += 14.0
 		x += 20.0
 

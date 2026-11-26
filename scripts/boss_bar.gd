@@ -55,7 +55,7 @@ func _draw() -> void:
 	var off := Vector2(0, (1.0 - _appear) * 30.0) # sobe do pé da tela
 	var r := Rect2(BAR.position + off, BAR.size)
 	# nome
-	Fx.text(self, Vector2(r.position.x, r.position.y - 4), _name, FRAME, 9, r.size.x, HORIZONTAL_ALIGNMENT_CENTER)
+	Fx.ui_text(self, Vector2(r.position.x, r.position.y - 4), _name, FRAME, 9, r.size.x, HORIZONTAL_ALIGNMENT_CENTER, "black")
 	# moldura
 	draw_rect(Rect2(r.position + Vector2(2, 2), r.size + Vector2(4, 4)), Color(0, 0, 0, 0.4))
 	draw_rect(r.grow(3), OUTLINE)

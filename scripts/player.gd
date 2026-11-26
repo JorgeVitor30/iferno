@@ -30,6 +30,8 @@ var bullet_pierce := 0     # quantos inimigos extras o tiro atravessa
 var bullet_count := 1      # projéteis por tiro (em leque)
 var bullet_bounces := 0   # quantas vezes o tiro ricocheteia na parede (Wi-Fi)
 var crit_chance := 0.0
+var crit_mult := 2         # quanto o crítico multiplica (Cola da Prova: 3)
+var roll_burst := false    # Carteirinha de Monitor: dodge solta tiros em volta
 var _boost := 0.0          # tempo restante do Café Duplo
 ## Na frente da faculdade (antes do ônibus) o estudante ainda não tem arma.
 var can_shoot := true
@@ -158,6 +160,8 @@ func _physics_process(delta: float) -> void:
 			_roll_timer = roll_time
 			_roll_dir = input.normalized()
 			Sfx.play(self, "roll")
+			if roll_burst:
+				_burst_shot(8)
 			_start_roll_anim()
 		elif can_shoot and Input.is_action_pressed("shoot") and _fire_cd <= 0.0:
 			_shoot()
@@ -175,8 +179,20 @@ func _shoot() -> void:
 		b.global_position = global_position + Vector2(0, -15) + dir * 12.0
 		b.direction = dir
 		var crit := randf() < crit_chance
-		b.damage = bullet_damage * (2 if crit else 1)
+		b.damage = bullet_damage * (crit_mult if crit else 1)
 		b.crit = crit
+		b.pierce = bullet_pierce
+		b.bounces = bullet_bounces
+		get_parent().add_child(b)
+
+## Tiros em todas as direções (Carteirinha de Monitor).
+func _burst_shot(n: int) -> void:
+	for i in n:
+		var dir := Vector2.RIGHT.rotated(TAU * i / n)
+		var b := BULLET.instantiate()
+		b.global_position = global_position + Vector2(0, -15) + dir * 10.0
+		b.direction = dir
+		b.damage = bullet_damage
 		b.pierce = bullet_pierce
 		b.bounces = bullet_bounces
 		get_parent().add_child(b)
