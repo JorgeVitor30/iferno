@@ -155,6 +155,7 @@ func _on_bus_boarded(_who: Node2D) -> void:
 	FloorLevel.floor_num = 1
 	FloorLevel.carry_hp = -1
 	Upgrades.reset()
+	Wallet.reset()
 	player.hide()
 	player.set_physics_process(false)
 	player.set_process(false)

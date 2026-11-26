@@ -14,6 +14,10 @@ const DOOR := preload("res://scripts/door.gd")
 const STAIRS := preload("res://scripts/stairs.gd")
 const CAFE := preload("res://scripts/cafe.gd")
 const CHEST := preload("res://scripts/chest.gd")
+const SHOPKEEPER := preload("res://scripts/shopkeeper.gd")
+const SHOP_ITEM := preload("res://scripts/shop_item.gd")
+## O que a lojinha vende (por enquanto); um banquinho pra cada.
+const SHOP_STOCK := ["vida", "meia_vida", "buff", "buff_aleatorio"]
 const ENEMIES := {
 	"zelador": preload("res://scripts/enemies/zelador.gd"),
 	"veterano": preload("res://scripts/enemies/veterano.gd"),
@@ -61,6 +65,7 @@ const KINDS := {
 	"banheiro": {"size": Vector2(544, 352), "tint": Color(0.86, 1.02, 1.06),
 		"pool": ["zelador", "zelador", "veterano", "estagiario"],
 		"lock": "INTERDITADO PRA LIMPEZA!"},
+	"loja": {"size": Vector2(544, 368), "tint": Color(1.1, 1.0, 0.86), "pool": [], "lock": ""},
 	"desafio": {"size": Vector2(672, 448), "tint": Color(1.1, 0.86, 0.86),
 		"pool": ["estagiario", "zelador", "veterano", "professor"],
 		"lock": "PROVA SURPRESA!\n5 RODADAS"},
@@ -104,7 +109,7 @@ func setup(g: Vector2i, k: String, center: Vector2, lvl: int, ents: Node2D) -> v
 	floor_level = lvl
 	entities = ents
 	var size: Vector2 = KINDS[k]["size"]
-	if k not in ["auditorio", "hall", "desafio"]:
+	if k not in ["auditorio", "hall", "desafio", "loja"]:
 		# Pequena, média ou grande; depois um sorteio em passos de 32px em volta disso
 		var roll := randf()
 		var mult := 1.0
@@ -132,11 +137,15 @@ func setup(g: Vector2i, k: String, center: Vector2, lvl: int, ents: Node2D) -> v
 		"banheiro": title = ["BANHEIRO MASCULINO", "BANHEIRO FEMININO"].pick_random()
 		"auditorio": title = "AUDITÓRIO · ESTATÍSTICA"
 		"desafio": title = "SALA DE PROVA SURPRESA"
+		"loja": title = "LOJINHA DA TIA"
 	_board_text = BOARD_TEXTS.pick_random()
 	_clearing = randf_range(60.0, 100.0)
 	_swap = randf() < 0.5
 	_rug = randf() < 0.5
-	cleared = k == "hall"
+	cleared = k in ["hall", "loja"] # sem inimigos
+
+func is_shop() -> bool:
+	return kind == "loja"
 
 func is_challenge() -> bool:
 	return kind == "desafio"
@@ -481,6 +490,21 @@ func _furnish(cx: float, cy: float) -> void:
 				d.position = Vector2(randf_range(L + 20, R - 20), randf_range(T + 90, B - 50))
 				entities.add_child(d)
 			_corners(["lixeira"], 1)
+		"loja":
+			# tia atrás do balcão, lá em cima; banquinhos com os itens na frente
+			_prop("balcao", Vector2(cx, T + 96), true)
+			var tia: Node2D = SHOPKEEPER.new()
+			tia.position = Vector2(cx + 44, T + 76) # lado da campainha (o monitor do balcão fica na esquerda)
+			entities.add_child(tia)
+			_footprints.append(Rect2(cx - 40, T + 30, 80, 50))
+			for i in SHOP_STOCK.size():
+				var it: Node2D = SHOP_ITEM.new()
+				it.kind = SHOP_STOCK[i]
+				it.position = Vector2(cx + (i - (SHOP_STOCK.size() - 1) / 2.0) * 76.0, T + 176)
+				entities.add_child(it)
+				_footprints.append(Rect2(it.position - Vector2(16, 20), Vector2(32, 24)))
+			_along_top(["estante", "vending"], 2)
+			_corners(["vaso"], 3)
 		"desafio":
 			# arena: quase vazia, só uns pilares pra se esconder dos tiros
 			_prop("pilar", Vector2(cx - 170, cy - 40), true)
@@ -499,7 +523,7 @@ func _furnish(cx: float, cy: float) -> void:
 			_prop("pilar", Vector2(L + 40, cy + 20), true)
 			_prop("pilar", Vector2(R - 40, cy + 20), true)
 	# Pilar no meio em salas grandes (cobertura extra pra desviar de tiro)
-	if kind not in ["hall", "auditorio", "banheiro", "desafio"] and r.size.x >= 700 and randf() < 0.4:
+	if kind not in ["hall", "auditorio", "banheiro", "desafio", "loja"] and r.size.x >= 700 and randf() < 0.4:
 		_prop("pilar", Vector2(cx + randf_range(-220, 220), cy + randf_range(-60, 100)))
 
 # ---------------------------------------------------------------- decoração desenhada
@@ -585,6 +609,9 @@ func _draw_wall_decor(n: Node2D) -> void:
 	var mid := r.get_center().x
 	var center_free := not has_side(Vector2i.UP)
 	match kind:
+		"loja":
+			_banner(n, mid if center_free else left, fy, "LOJINHA DA TIA - FIADO SÓ AMANHÃ")
+			_clock(n, right, fy)
 		"desafio":
 			_banner(n, mid if center_free else left, fy, "PROVA SURPRESA - SEM CONSULTA")
 			_hazard(n, right, fy)
@@ -714,7 +741,7 @@ func _exit_sign(n: Node2D, x: float, fy: float) -> void:
 
 func _plan_waves() -> void:
 	_waves.clear()
-	if kind == "hall":
+	if kind in ["hall", "loja"]:
 		return
 	if is_boss_room():
 		_waves.append(["prof_estatistica"])

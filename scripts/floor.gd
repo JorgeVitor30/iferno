@@ -80,6 +80,7 @@ func _generate() -> void:
 			links.append([c, nb])
 	var far := _farthest(cells, links)
 	var trap := _pick_challenge(cells, links, far)
+	var shop := _pick_challenge(cells, links, far, [trap]) # lojinha da tia: também num canto
 	var pool: Array = []
 	for c in cells:
 		var k := "hall"
@@ -87,6 +88,8 @@ func _generate() -> void:
 			k = "auditorio" # sala do chefe
 		elif c == trap:
 			k = "desafio" # sala de prova surpresa (ondas + baú)
+		elif c == shop:
+			k = "loja" # lojinha da tia (gasta as moedas)
 		elif c != Vector2i.ZERO:
 			if pool.is_empty():
 				pool = ROOM_POOL.duplicate()
@@ -100,7 +103,7 @@ func _generate() -> void:
 	# Elite (coordenadora) escondida em salas comuns sorteadas
 	var normal: Array = []
 	for c in cells:
-		if c != Vector2i.ZERO and c != far and c != trap:
+		if c != Vector2i.ZERO and c != far and c != trap and c != shop:
 			normal.append(c)
 	normal.shuffle()
 	for i in mini(1 + int(floor_num >= 3), normal.size()):
@@ -119,11 +122,11 @@ func _generate() -> void:
 
 ## Uma sala de desafio por andar: de preferência num beco sem saída
 ## (não atrapalha o caminho até o chefe; entra quem quer).
-func _pick_challenge(cells: Array[Vector2i], links: Array, far: Vector2i) -> Vector2i:
+func _pick_challenge(cells: Array[Vector2i], links: Array, far: Vector2i, skip: Array = []) -> Vector2i:
 	var dead_ends: Array[Vector2i] = []
 	var others: Array[Vector2i] = []
 	for c in cells:
-		if c == Vector2i.ZERO or c == far:
+		if c == Vector2i.ZERO or c == far or skip.has(c):
 			continue
 		var deg := 0
 		for l: Array in links:
@@ -286,6 +289,7 @@ func _on_player_died() -> void:
 	floor_num = 1
 	carry_hp = -1
 	Upgrades.reset()
+	Wallet.reset()
 
 func next_floor() -> void:
 	if _leaving:
