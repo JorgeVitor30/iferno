@@ -28,9 +28,11 @@ var base_roll_cooldown := 0.0
 var bullet_damage := 1
 var bullet_pierce := 0     # quantos inimigos extras o tiro atravessa
 var bullet_count := 1      # projéteis por tiro (em leque)
-var bullet_homing := 0.0   # força com que o tiro vira pro inimigo
+var bullet_bounces := 0   # quantas vezes o tiro ricocheteia na parede (Wi-Fi)
 var crit_chance := 0.0
 var _boost := 0.0          # tempo restante do Café Duplo
+## Na frente da faculdade (antes do ônibus) o estudante ainda não tem arma.
+var can_shoot := true
 
 var _roll_timer := 0.0
 var _roll_dir := Vector2.ZERO
@@ -157,7 +159,7 @@ func _physics_process(delta: float) -> void:
 			_roll_dir = input.normalized()
 			Sfx.play(self, "roll")
 			_start_roll_anim()
-		elif Input.is_action_pressed("shoot") and _fire_cd <= 0.0:
+		elif can_shoot and Input.is_action_pressed("shoot") and _fire_cd <= 0.0:
 			_shoot()
 	move_and_slide()
 
@@ -176,7 +178,7 @@ func _shoot() -> void:
 		b.damage = bullet_damage * (2 if crit else 1)
 		b.crit = crit
 		b.pierce = bullet_pierce
-		b.homing = bullet_homing
+		b.bounces = bullet_bounces
 		get_parent().add_child(b)
 
 func _process(delta: float) -> void:
@@ -193,7 +195,7 @@ func _process(delta: float) -> void:
 		_update_blink()
 		return
 	spr.position.y = SPRITE_Y
-	$Gun.visible = true
+	$Gun.visible = can_shoot
 	# Olha pro mouse: escolhe a mais próxima das 8 direções.
 	var dir := _dir_index(aim)
 	_view = DIR_TO_VIEW[dir][0]

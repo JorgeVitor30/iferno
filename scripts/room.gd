@@ -116,7 +116,7 @@ func setup(g: Vector2i, k: String, center: Vector2, lvl: int, ents: Node2D) -> v
 		"banheiro": title = ["BANHEIRO MASCULINO", "BANHEIRO FEMININO"].pick_random()
 		"auditorio": title = "AUDITÓRIO · ESTATÍSTICA"
 	_board_text = BOARD_TEXTS.pick_random()
-	_clearing = randf_range(50.0, 120.0)
+	_clearing = randf_range(60.0, 100.0)
 	_swap = randf() < 0.5
 	_rug = randf() < 0.5
 	cleared = k == "hall"
@@ -256,37 +256,119 @@ func _lane_blocked(fp: Rect2) -> bool:
 			return true
 	return false
 
-func _prop(k: String, base: Vector2, ignore_lanes: bool = false) -> bool:
+## Folga mínima entre a parte sólida de móveis de grupos diferentes:
+## o estudante (~24px de largura) passa com sobra entre quaisquer dois móveis.
+const WALK_GAP := 30.0
+## Móveis do mesmo grupo (ex.: 4 carteiras juntas) ficam coladinhos.
+const GROUP_GAP := 4.0
+
+var _solids: Array = [] # [Rect2 sólido, id do grupo]
+var _group := 0
+
+func _solid_of(k: String, base: Vector2) -> Rect2:
+	var sz: Vector2 = PROP.KINDS[k][1]
+	return Rect2(base.x - sz.x / 2.0, base.y - sz.y, sz.x, sz.y)
+
+## Dá pra colocar o móvel aqui? (dentro da sala, fora dos caminhos e com folga dos outros)
+func _can_place(k: String, base: Vector2, ignore_lanes: bool = false, group: int = -1) -> bool:
 	base = base.round()
 	var fp: Rect2 = PROP.footprint(k, base)
-	var solid := Rect2(fp.position.x, base.y - 12, fp.size.x, 12)
+	var solid := _solid_of(k, base)
 	if not rect.grow(-6).encloses(Rect2(solid.position.x, base.y - 2, solid.size.x, 2)):
+		return false
+	if fp.position.y < rect.position.y - FACE + 8:
 		return false
 	if not ignore_lanes and _lane_blocked(solid):
 		return false
 	for other in _footprints:
-		if other.grow(4).intersects(fp):
+		if other.grow(1).intersects(fp): # desenho não pode encavalar
 			return false
+	for o: Array in _solids:
+		var gap := GROUP_GAP if group >= 0 and o[1] == group else WALK_GAP
+		if (o[0] as Rect2).grow(gap / 2.0).intersects(solid.grow(gap / 2.0)):
+			return false
+	return true
+
+func _prop(k: String, base: Vector2, ignore_lanes: bool = false, group: int = -1) -> bool:
+	base = base.round()
+	if not _can_place(k, base, ignore_lanes, group):
+		return false
 	var p: StaticBody2D = PROP.new()
 	p.kind = k
 	p.position = base
 	entities.add_child(p)
-	_footprints.append(fp)
+	_footprints.append(PROP.footprint(k, base))
+	_solids.append([_solid_of(k, base), group])
 	return true
 
-func _grid(k: String, x0: float, y0: float, x1: float, y1: float, step: Vector2, chance: float = 1.0, stagger: float = 0.0) -> void:
-	var y := y0
-	var row := 0
-	while y <= y1:
-		var x := x0 + (stagger if row % 2 == 1 else 0.0)
-		while x <= x1:
-			if randf() <= chance:
-				_prop(k, Vector2(x, y))
-			x += step.x
-		y += step.y
-		row += 1
+## Grupo de móveis (ex.: [["carteira", Vector2(-20, 0)], ...]) num lugar sorteado
+## da sala. Só coloca se o grupo inteiro couber; cada peça ganha um tremidinho
+## de posição pra não ficar com cara de grade.
+func _cluster(members: Array, area: Rect2 = Rect2(), tries: int = 50) -> bool:
+	if area.size == Vector2.ZERO:
+		area = Rect2(rect.position + Vector2(40, 110), rect.size - Vector2(80, 130))
+	_group += 1
+	for t in tries:
+		var anchor := Vector2(randf_range(area.position.x, area.end.x), randf_range(area.position.y, area.end.y))
+		var placed: Array = []
+		var ok := true
+		for m: Array in members:
+			var base: Vector2 = (anchor + (m[1] as Vector2) + Vector2(randf_range(-3, 3), randf_range(-2, 2))).round()
+			if not _can_place(m[0], base, false, _group):
+				ok = false
+				break
+			# confere contra as peças já testadas do próprio grupo
+			placed.append([m[0], base])
+			_footprints.append(PROP.footprint(m[0], base))
+			_solids.append([_solid_of(m[0], base), _group])
+		# desfaz o teste e, se deu certo, coloca de verdade
+		for i in placed.size():
+			_footprints.pop_back()
+			_solids.pop_back()
+		if ok:
+			for pl: Array in placed:
+				_prop(pl[0], pl[1], false, _group)
+			return true
+	return false
 
-## Joga `count` objetos sorteados em lugares aleatórios da sala.
+## Vários grupos sorteados de `options`, quantidade proporcional ao tamanho da sala.
+func _clusters(options: Array, per_100k: float, area: Rect2 = Rect2()) -> void:
+	var n := maxi(1, roundi(rect.size.x * rect.size.y / 100000.0 * per_100k))
+	for i in n:
+		_cluster(options.pick_random(), area)
+
+## Objetos encostados na parede de cima, em posições sorteadas.
+func _along_top(kinds: Array, count: int) -> void:
+	for i in count:
+		for tries in 16:
+			var k: String = kinds.pick_random()
+			var y := rect.position.y + (22.0 if k in ["armarios", "estante", "cabine", "vending", "pilar"] else 34.0)
+			if _prop(k, Vector2(randf_range(rect.position.x + 40, rect.end.x - 40), y)):
+				break
+
+## Objetos encostados nas paredes de baixo/laterais.
+func _along_walls(kinds: Array, count: int) -> void:
+	for i in count:
+		for tries in 16:
+			var k: String = kinds.pick_random()
+			var p: Vector2
+			match randi() % 3:
+				0: p = Vector2(randf_range(rect.position.x + 30, rect.end.x - 30), rect.end.y - 8)
+				1: p = Vector2(rect.position.x + 22, randf_range(rect.position.y + 90, rect.end.y - 10))
+				_: p = Vector2(rect.end.x - 22, randf_range(rect.position.y + 90, rect.end.y - 10))
+			if _prop(k, p):
+				break
+
+## Coisinhas nos cantos (vaso, lixeira): dão vida sem atrapalhar.
+func _corners(kinds: Array, count: int) -> void:
+	var spots: Array[Vector2] = [
+		Vector2(rect.position.x + 20, rect.position.y + 70), Vector2(rect.end.x - 20, rect.position.y + 70),
+		Vector2(rect.position.x + 20, rect.end.y - 8), Vector2(rect.end.x - 20, rect.end.y - 8)]
+	spots.shuffle()
+	for i in mini(count, spots.size()):
+		_prop(kinds.pick_random(), spots[i])
+
+## Objetos pequenos soltos (papel no chão etc.).
 func _scatter(kinds: Array, count: int, top_margin: float = 50.0) -> void:
 	for i in count:
 		for tries in 12:
@@ -295,23 +377,14 @@ func _scatter(kinds: Array, count: int, top_margin: float = 50.0) -> void:
 			if _prop(kinds.pick_random(), p):
 				break
 
-## Objetos encostados na parede de cima, em posições sorteadas.
-func _along_top(kinds: Array, count: int) -> void:
-	for i in count:
-		for tries in 12:
-			var k: String = kinds.pick_random()
-			var y := rect.position.y + (22.0 if k in ["armarios", "estante", "cabine", "vending", "pilar"] else 34.0)
-			if _prop(k, Vector2(randf_range(rect.position.x + 50, rect.end.x - 50), y)):
-				break
-
 func _furnish(cx: float, cy: float) -> void:
-	# Espaçamentos pensados pros móveis em tamanho real (sprites de assets/props/clean).
+	# Ideia: móveis encostados nas paredes + poucos grupos soltos pelo meio,
+	# sempre com folga pra andar/desviar (WALK_GAP) e o centro livre pra lutar.
 	var r := rect
 	var L := r.position.x
 	var T := r.position.y
 	var R := r.end.x
 	var B := r.end.y
-	var v := randi() % 3 # variação do layout
 	match kind:
 		"hall":
 			_prop("balcao", Vector2(cx + (170 if _swap else -170), T + 90))
@@ -319,115 +392,87 @@ func _furnish(cx: float, cy: float) -> void:
 			_prop("bebedouro", Vector2(L + 36 if not _swap else R - 36, T + 30))
 			for x in [L + 26, R - 26]:
 				_prop("vaso", Vector2(x, B - 12), true)
-			# linha de catracas com passagem no meio
-			var x := L + 80
-			while x < R - 70:
-				if absf(x - cx) > 56:
-					_prop("catraca", Vector2(x, B - 110), true)
-				x += 32
-			_scatter(["vaso", "lixeira"], 2)
+			# catracas em dois blocos com passagem larga no meio
+			_group += 1
+			var x := L + 90
+			while x < R - 80:
+				if absf(x - cx) > 70:
+					_prop("catraca", Vector2(x, B - 110), true, _group)
+				x += 30
 		"sala_aula":
 			_prop("mesa_prof", Vector2(L + r.size.x * (0.75 if _swap else 0.25), T + 56))
-			match v:
-				0: # fileiras
-					_grid("carteira", L + 50, T + 130, R - 40, B - 24, Vector2(60, 60))
-				1: # grupos de 4 carteiras
-					var y := T + 140.0
-					while y < B - 60:
-						var x := L + 80.0
-						while x < R - 80:
-							for o: Vector2 in [Vector2(-20, 0), Vector2(20, 0), Vector2(-20, 38), Vector2(20, 38)]:
-								_prop("carteira", Vector2(x, y) + o)
-							x += 150
-						y += 130
-				2: # em U, colado nas paredes
-					_grid("carteira", L + 40, B - 24, R - 40, B - 24, Vector2(50, 50))
-					_grid("carteira", L + 30, T + 140, L + 30, B - 80, Vector2(50, 56))
-					_grid("carteira", R - 30, T + 140, R - 30, B - 80, Vector2(50, 56))
-					_prop("pilar", Vector2(cx - 160, cy + 20))
-					_prop("pilar", Vector2(cx + 160, cy + 20))
-			_scatter(["vaso", "lixeira"], randi_range(0, 2))
+			var row3 := [["carteira", Vector2(-44, 0)], ["carteira", Vector2(0, 0)], ["carteira", Vector2(44, 0)]]
+			var row2 := [["carteira", Vector2(-22, 0)], ["carteira", Vector2(22, 0)]]
+			var quad := [["carteira", Vector2(-20, 0)], ["carteira", Vector2(20, 0)],
+				["carteira", Vector2(-20, 36)], ["carteira", Vector2(20, 36)]]
+			var one := [["carteira", Vector2.ZERO]]
+			_clusters([row3, row3, row2, quad, quad, one], 2.0)
+			_corners(["vaso", "lixeira"], randi_range(1, 2))
 		"biblioteca":
-			match v:
-				0: # fileiras de estantes
-					_grid("estante", L + 60, T + 110, R - 50, B - 30, Vector2(90, 130))
-				1: # colunas de estantes (corredores verticais)
-					_grid("estante", L + 50, T + 110, R - 50, B - 20, Vector2(150, 90))
-				2: # estantes nas paredes + mesas de leitura no meio
-					_along_top(["estante"], 6)
-					_grid("mesa_cantina", L + 100, T + 170, R - 100, B - 30, Vector2(170, 110))
+			_along_top(["estante"], randi_range(3, 5))
 			_prop("mesa_prof", Vector2(cx + (-140 if _swap else 140), T + 52))
-			_scatter(["vaso", "pilha_papel", "lixeira"], randi_range(1, 4))
+			var pair := [["estante", Vector2(-33, 0)], ["estante", Vector2(33, 0)]]
+			var single := [["estante", Vector2.ZERO]]
+			var reading := [["mesa_cantina", Vector2.ZERO]]
+			_clusters([pair, pair, single, reading, reading], 1.4)
+			_corners(["vaso"], 2)
+			_scatter(["pilha_papel"], randi_range(1, 3))
 		"laboratorio":
 			_along_top(["armarios"], 2)
-			match v:
-				0:
-					_grid("bancada", L + 70, T + 150, R - 60, B - 24, Vector2(130, 110))
-				1: # bancadas desencontradas
-					_grid("bancada", L + 70, T + 140, R - 60, B - 24, Vector2(170, 100), 1.0, 85.0)
-				2: # ilhas grandes (duas bancadas juntas)
-					_grid("bancada", L + 90, T + 160, R - 90, B - 60, Vector2(200, 130))
-					_grid("bancada", L + 90, T + 210, R - 90, B - 10, Vector2(200, 130))
-			_scatter(["lixeira", "pilha_papel"], randi_range(0, 2))
+			var island := [["bancada", Vector2(-44, 0)], ["bancada", Vector2(44, 0)]]
+			var bench := [["bancada", Vector2.ZERO]]
+			_clusters([bench, bench, island], 1.3)
+			_corners(["lixeira"], randi_range(1, 2))
 		"cantina":
 			_along_top(["vending", "vending", "cafeteira", "bebedouro"], randi_range(2, 4))
-			match v:
-				0:
-					_grid("mesa_cantina", L + 90, T + 140, R - 80, B - 24, Vector2(170, 90))
-				1:
-					_grid("mesa_cantina", L + 80, T + 140, R - 80, B - 24, Vector2(200, 84), 1.0, 100.0)
-				2:
-					_scatter(["mesa_cantina"], 7, 120.0)
-			_scatter(["lixeira", "vaso"], randi_range(1, 3))
+			_clusters([[["mesa_cantina", Vector2.ZERO]]], 1.4)
+			_corners(["lixeira", "vaso"], randi_range(1, 3))
 		"sala_prof":
 			_along_top(["sofa", "cafeteira", "estante", "armarios", "vending"], 3)
-			if v == 0:
-				_grid("mesa_cantina", L + 90, T + 160, R - 90, B - 30, Vector2(180, 120))
-			else:
-				_scatter(["mesa_prof", "sofa", "mesa_cantina"], 4, 110.0)
-			_scatter(["vaso", "pilha_papel"], randi_range(1, 3))
+			_clusters([[["mesa_cantina", Vector2.ZERO]], [["sofa", Vector2.ZERO]], [["mesa_prof", Vector2.ZERO]]], 0.8)
+			_corners(["vaso"], randi_range(1, 2))
+			_scatter(["pilha_papel"], randi_range(1, 2))
 		"xerox":
-			if v != 1:
-				var x := L + 40
-				while x < R - 30:
-					_prop("copiadora", Vector2(x, T + 30))
-					x += randf_range(64, 90)
-			else:
-				_grid("copiadora", L + 70, T + 140, R - 60, B - 30, Vector2(120, 100))
-			_scatter(["pilha_papel"], randi_range(6, 12), 90.0)
+			_along_top(["copiadora"], randi_range(3, 5))
+			if randf() < 0.5:
+				_clusters([[["copiadora", Vector2.ZERO]]], 0.4)
+			_scatter(["pilha_papel"], randi_range(4, 7), 90.0)
 		"informatica":
-			match v:
-				0:
-					_grid("pc", L + 44, T + 120, R - 40, B - 20, Vector2(56, 70))
-				1: # fileiras longas
-					_grid("pc", L + 40, T + 130, R - 40, B - 20, Vector2(50, 100))
-				2: # PCs nas paredes
-					_grid("pc", L + 40, T + 32, R - 40, T + 32, Vector2(56, 40))
-					_grid("pc", L + 40, B - 16, R - 40, B - 16, Vector2(56, 40))
-					_scatter(["pc"], 4, 120.0)
-			_scatter(["lixeira", "pilha_papel"], randi_range(0, 2))
+			_along_top(["pc"], randi_range(4, 7))
+			var pcs3 := [["pc", Vector2(-48, 0)], ["pc", Vector2(0, 0)], ["pc", Vector2(48, 0)]]
+			var pcs2 := [["pc", Vector2(-24, 0)], ["pc", Vector2(24, 0)]]
+			_clusters([pcs3, pcs3, pcs2], 1.7)
+			_corners(["lixeira"], 1)
 		"banheiro":
-			# cabines numa parede, pias na outra
+			# cabines numa parede, algumas pias na outra
+			_group += 1
 			var x := L + 36.0
 			while x < R - 34:
-				_prop("cabine", Vector2(x, T + 22))
+				_prop("cabine", Vector2(x, T + 22), false, _group)
 				x += 52
-			_grid("pia", L + 40, B - 16, R - 40, B - 16, Vector2(48, 30))
-			for i in randi_range(2, 5):
+			_group += 1
+			var px := cx - 72.0
+			for i in 4:
+				_prop("pia", Vector2(px + i * 48, B - 10), false, _group)
+			for i in randi_range(2, 4):
 				var d: Node2D = preload("res://scripts/decal.gd").new()
 				d.kind = "agua"
 				d.color = Color("7ec8e3")
 				d.position = Vector2(randf_range(L + 20, R - 20), randf_range(T + 90, B - 50))
 				entities.add_child(d)
-			_scatter(["lixeira"], 1)
+			_corners(["lixeira"], 1)
 		"auditorio":
-			# Palco em cima (o chefe fica lá), plateia embaixo
+			# Palco em cima (o chefe fica lá), plateia embaixo com corredores entre as fileiras
 			_prop("pulpito", Vector2(cx + (110 if _swap else -110), T + 80))
-			_grid("poltronas", L + 70, cy + 90, R - 70, B - 14, Vector2(126, 46))
+			var y := cy + 100
+			while y < B - 10:
+				for xs in [L + 110, R - 110]:
+					_prop("poltronas", Vector2(xs + randf_range(-6, 6), y))
+				y += 70
 			_prop("pilar", Vector2(L + 40, cy + 20), true)
 			_prop("pilar", Vector2(R - 40, cy + 20), true)
-	# Pilar no meio do caminho em salas grandes (cobertura extra)
-	if kind not in ["hall", "auditorio", "banheiro"] and r.size.x >= 700 and randf() < 0.5:
+	# Pilar no meio em salas grandes (cobertura extra pra desviar de tiro)
+	if kind not in ["hall", "auditorio", "banheiro"] and r.size.x >= 700 and randf() < 0.4:
 		_prop("pilar", Vector2(cx + randf_range(-220, 220), cy + randf_range(-60, 100)))
 
 # ---------------------------------------------------------------- decoração desenhada

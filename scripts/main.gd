@@ -42,6 +42,7 @@ func _ready() -> void:
 	cam.limit_right = int(ROOM.end.x + CAP + 16)
 	cam.limit_bottom = int(ROOM.end.y + CAP + 16)
 	cam.reset_smoothing()
+	player.can_shoot = false # arma só dentro da faculdade
 	player.health_changed.connect($HUD/HealthBar.set_health)
 	$HUD/HealthBar.set_health(player.hp, player.max_hp)
 	$Entities/Bus.boarded.connect(_on_bus_boarded)
@@ -158,6 +159,11 @@ func _on_bus_boarded(_who: Node2D) -> void:
 	player.set_physics_process(false)
 	player.set_process(false)
 	player.get_node("Camera2D").reparent(self) # câmera fica parada vendo o ônibus sair
+	# fom-fom + motor arrancando
+	Sfx.play(self, "door", 0.0)
+	get_tree().create_timer(0.15).timeout.connect(func(): Sfx.play(self, "horn", 0.0))
+	get_tree().create_timer(0.42).timeout.connect(func(): Sfx.play(self, "horn", 0.0))
+	get_tree().create_timer(0.55).timeout.connect(func(): Sfx.play(self, "engine", 0.0))
 	var tw := create_tween()
 	tw.tween_interval(0.6)
 	tw.tween_property($HUD/Fade, "color:a", 1.0, 0.8)
