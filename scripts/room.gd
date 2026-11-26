@@ -748,11 +748,11 @@ A ESCADA ESTÁ LIBERADA", Color("3fd17a"), 2.0)
 	if randf() < 0.4 or is_boss_room():
 		var cafe: Node2D = CAFE.new()
 		cafe.position = rect.get_center() + Vector2(0, 50)
-		entities.add_child(cafe)
+		entities.call_deferred("add_child", cafe)
 	# Só o chefe libera a escada pro próximo andar.
 	if is_boss_room():
 		var st: Area2D = STAIRS.new()
 		st.position = Vector2(rect.position.x + rect.size.x * 0.78, rect.position.y + 96)
 		st.climbed.connect(func(): get_tree().call_group("level", "next_floor"))
-		entities.add_child(st)
+		entities.call_deferred("add_child", st)
 	cleared_room.emit(self)
