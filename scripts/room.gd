@@ -77,6 +77,7 @@ var grid := Vector2i.ZERO
 var kind := "sala_aula"
 var size_class := "media"    # pequena / media / grande (muda o tamanho e quantos inimigos)
 const CHALLENGE_WAVES := 5
+const CHALLENGE_DIFFICULTY := 1.3 # multiplica o "orçamento" de inimigos de cada rodada
 var rect := Rect2()          # chão andável
 var sides: Array[Vector2i] = [] # lados com porta
 var title := ""
@@ -722,7 +723,8 @@ func _plan_waves() -> void:
 	if is_challenge():
 		# 5 rodadas, cada uma um pouco mais pesada; na última, uma elite.
 		for w in CHALLENGE_WAVES:
-			_waves.append(_make_wave(pool, 7 + floor_level * 2 + w * 2))
+			# (x1,3: 30% mais pesada que a primeira versão)
+			_waves.append(_make_wave(pool, roundi((7 + floor_level * 2 + w * 2) * CHALLENGE_DIFFICULTY)))
 		(_waves[CHALLENGE_WAVES - 1] as Array).append("coordenadora")
 		return
 	# Orçamento de "custo" de inimigos: andar 1 dá ~5-6 inimigos em 1 a 3 ondas.

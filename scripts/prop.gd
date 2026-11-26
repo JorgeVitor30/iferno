@@ -138,8 +138,9 @@ func _draw() -> void:
 		# sombra de contato colada na base (+ um pouco pra direita/baixo, luz vem de cima/esquerda)
 		var solid: Vector2 = KINDS[kind][1]
 		var base_w := maxf(solid.x, sz.x * 0.6)
-		draw_rect(Rect2(-base_w / 2.0 + 2, -solid.y * 0.6, base_w, solid.y * 0.6 + 3), Color(0, 0, 0, 0.22))
-		Fx.contact_shadow(self, Vector2(2, 1), base_w * 0.58, 1.1)
+		# elipse achatada embaixo da base: só 2-3px aparecem abaixo do objeto
+		var ry := clampf(solid.y * 0.55, 3.0, 10.0)
+		Fx.contact_shadow(self, Vector2(2, 3 - ry), base_w * 0.56, 1.15, ry)
 		draw_texture(tex, Vector2(-floorf(sz.x / 2.0), -sz.y + 1))
 		return
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(A, A))

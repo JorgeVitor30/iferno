@@ -279,4 +279,4 @@ func _play_keep_phase(spr: AnimatedSprite2D, anim: String) -> void:
 func _draw() -> void:
 	# Sombra no pé (some um pouco no pulinho do dodge)
 	var lift := absf($Sprite2D.position.y - SPRITE_Y)
-	Fx.contact_shadow(self, Vector2(0, 2), 12.0 - lift * 0.5, 1.7 - lift * 0.12)
+	Fx.contact_shadow(self, Vector2(0, 1), 11.0 - lift * 0.5, 1.7 - lift * 0.12)

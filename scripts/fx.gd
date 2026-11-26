@@ -189,13 +189,26 @@ static func setup_lighting(scene: Node, player: Node2D, ambient: Color) -> void:
 	player.add_child(l)
 
 ## Sombra de contato no chão (o que "cola" personagem/objeto no piso).
-## Elipse escura em degraus: borda mais clara, miolo mais escuro.
-static func contact_shadow(ci: CanvasItem, center: Vector2, half_w: float, strength: float = 1.0) -> void:
-	ci.draw_set_transform(center, 0.0, Vector2(1.0, 0.38))
-	ci.draw_circle(Vector2.ZERO, half_w, Color(0, 0, 0, 0.28 * strength))
-	ci.draw_circle(Vector2.ZERO, half_w * 0.72, Color(0, 0, 0, 0.3 * strength))
-	ci.draw_circle(Vector2.ZERO, half_w * 0.42, Color(0, 0, 0, 0.25 * strength))
-	ci.draw_set_transform(Vector2.ZERO)
+## Elipse em degraus de pixel (nítida como a arte): borda mais clara, miolo mais escuro.
+## `ry` = meia altura (padrão: 38% da meia largura). Centralize um pouco ACIMA da base
+## do objeto: se a sombra sair muito pra baixo dele, parece que ele está flutuando.
+static func contact_shadow(ci: CanvasItem, center: Vector2, half_w: float, strength: float = 1.0, ry: float = -1.0) -> void:
+	if ry < 0.0:
+		ry = half_w * 0.38
+	ry = maxf(ry, 1.5)
+	var c := center.round()
+	for layer: Array in [[1.0, 0.26], [0.72, 0.28], [0.42, 0.24]]:
+		var hw: float = half_w * layer[0]
+		var hy: float = ry * layer[0]
+		var col := Color(0, 0, 0, layer[1] * strength)
+		var n := ceili(hy)
+		for y in range(-n, n + 1):
+			var t := float(y) / hy
+			if absf(t) > 1.0:
+				continue
+			var w := roundf(hw * sqrt(1.0 - t * t))
+			if w >= 1.0:
+				ci.draw_rect(Rect2(c.x - w, c.y + y, w * 2.0, 1.0), col)
 
 ## Chão/parede repetindo uma textura de pixel grosso (desenhada em escala ART).
 static func tiled(parent: Node, tex: Texture2D, r: Rect2, tint: Color = Color.WHITE) -> Sprite2D:
