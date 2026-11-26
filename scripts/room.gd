@@ -791,9 +791,14 @@ func _on_body_entered(body: Node2D) -> void:
 		d.close()
 	Fx.shake(self, 4.0)
 	if is_boss_room():
-		get_tree().call_group("hud", "banner", "PROF. DE ESTATÍSTICA
-PROVA FINAL - MÉDIA 7", Color("ff5a4a"), 2.0)
-		await get_tree().create_timer(1.2).timeout
+		# chefe aparece, apresentação (jogo pausado ~3s) e só então a luta começa
+		await get_tree().create_timer(0.4).timeout
+		_spawn_wave(0)
+		for e in get_tree().get_nodes_in_group("enemy"):
+			if e.boss and not e.dead:
+				get_tree().call_group("hud", "boss_intro", e)
+				break
+		return
 	else:
 		get_tree().call_group("hud", "banner", KINDS[kind]["lock"], Color("ff5a4a"))
 		await get_tree().create_timer(0.5).timeout

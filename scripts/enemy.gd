@@ -34,6 +34,12 @@ var sprite_tex: Texture2D
 var shadow_r := 9.0
 var elite := false
 var boss := false # chefe do andar: barra de vida no HUD, não é empurrado por tiro
+## Apresentação de chefe (BossIntro, padrão pra todos os chefes): nome = display_name.
+var intro_subtitle := ""
+var intro_color := Color("ff5a4a")
+var portrait_tex: Texture2D # imagem do chefe na apresentação (padrão: sprite_tex)
+## Música da luta (padrão pra todos; um chefe pode trocar no _setup).
+var boss_music := "res://assets/music/boss_theme"
 var display_name := ""
 var lines: PackedStringArray = []
 var death_lines: PackedStringArray = []

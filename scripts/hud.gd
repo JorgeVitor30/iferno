@@ -132,8 +132,54 @@ func banner(text: String, color: Color, hold: float = 1.2) -> void:
 	_banner_tw.tween_interval(hold)
 	_banner_tw.tween_property(_banner, "modulate:a", 0.0, 0.4)
 
+## Apresentação do chefe (pausa ~3s) e depois a música de luta.
+func boss_intro(enemy: Enemy) -> void:
+	var intro := BossIntro.new()
+	intro.boss_name = enemy.display_name
+	intro.subtitle = enemy.intro_subtitle
+	intro.color = enemy.intro_color
+	intro.portrait = enemy.portrait_tex if enemy.portrait_tex else enemy.sprite_tex
+	intro.finished.connect(func():
+		get_tree().paused = false
+		play_boss_music(enemy.boss_music))
+	add_child(intro)
+	move_child(fade, get_child_count() - 1)
+	get_tree().paused = true
+
+var _music: AudioStreamPlayer
+
+## Toca a música do chefe em loop (arquivo .ogg/.mp3/.wav em assets/music/).
+func play_boss_music(base_path: String) -> void:
+	var stream: AudioStream = null
+	for ext in ["ogg", "mp3", "wav"]:
+		if ResourceLoader.exists(base_path + "." + ext):
+			stream = load(base_path + "." + ext)
+			break
+	if stream == null:
+		return
+	if stream is AudioStreamMP3 or stream is AudioStreamOggVorbis:
+		stream.loop = true
+	_music = AudioStreamPlayer.new()
+	_music.stream = stream
+	_music.bus = &"Music"
+	_music.volume_db = -30.0
+	add_child(_music)
+	_music.play()
+	create_tween().tween_property(_music, "volume_db", -4.0, 0.6)
+
+func stop_music(fade_time: float = 1.2) -> void:
+	if _music == null:
+		return
+	var m := _music
+	_music = null
+	var tw := create_tween()
+	tw.tween_property(m, "volume_db", -40.0, fade_time)
+	tw.tween_callback(m.queue_free)
+
 ## Barra de vida do chefe embaixo da tela. Some sozinha quando ele cai.
 func show_boss(enemy: Node) -> void:
+	if enemy.has_signal("died"):
+		enemy.died.connect(func(_e): stop_music(), CONNECT_ONE_SHOT)
 	if _boss_bar == null:
 		_boss_bar = BossBar.new()
 		add_child(_boss_bar)
